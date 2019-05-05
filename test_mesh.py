@@ -18,5 +18,5 @@ def test_mesh_centers(nodes, elements, center):
 @pytest.mark.parametrize('nodes, elements, normals', [
     ([[0, 0], [2, 0], [2, 2]], [[0, 1], [1, 2]], np.array([[0, -1], [1, 0]])),
 ])
-def test_mesh_2d_normals(nodes, elements, normals):
+def test_mesh_normals(nodes, elements, normals):
     np.testing.assert_allclose(normals, Mesh(nodes, elements).normals)
