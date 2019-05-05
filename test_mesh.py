@@ -8,8 +8,17 @@ import pytest
 from mesh import Mesh
 
 
+@pytest.mark.parametrize('nodes, elements, corners', [
+    ([[0, 0], [1, 0], [1, 1]], [[0, 1], [1, 2]],
+     np.array([[[0, 0], [1, 0]], [[1, 0], [1, 1]]])),
+])
+def test_mesh_corners(nodes, elements, corners):
+    np.testing.assert_allclose(corners, Mesh(nodes, elements).corners)
+
+
 @pytest.mark.parametrize('nodes, elements, center', [
-    ([[0, 0], [1, 0], [1, 1]], [[0, 1], [1, 2]], np.array([[.5, 0], [1, .5]])),
+    ([[0, 0], [1, 0], [1, 4]], [[0, 1], [1, 2]], np.array([[.5, 0], [1, 2]])),
+    ([[0, 1], [2, 3]], [[0, 1]], np.array([[1, 2]])),
 ])
 def test_mesh_centers(nodes, elements, center):
     np.testing.assert_allclose(center, Mesh(nodes, elements).centers)

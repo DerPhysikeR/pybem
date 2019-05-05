@@ -13,6 +13,7 @@ class Mesh:
         assert self._nodes.shape[1] == 2
         self._elements = np.array(elements)
         assert self._elements.shape[1] == 2
+        self._corners = self._calc_corners()
         self._centers = self._calc_centers()
         self._normals = self._calc_normals()
 
@@ -32,17 +33,23 @@ class Mesh:
     def normals(self):
         return self._normals
 
+    @property
+    def corners(self):
+        return self._corners
+
+    def _calc_corners(self):
+        corners = np.empty((*self._elements.shape, self._nodes.shape[1]))
+        for i, corner_indexes in enumerate(self._elements):
+            corners[i] = np.vstack([self._nodes[j] for j in corner_indexes])
+        return corners
+
     def _calc_centers(self):
-        centers = np.empty((self._elements.shape[0], self._nodes.shape[1]))
-        for i, corners in enumerate(self._elements):
-            centers[i] = np.vstack([self._nodes[j]
-                                    for j in corners]).mean(axis=0)
-        return centers
+        return self._corners.mean(axis=1)
 
     def _calc_normals(self):
         normals = np.empty((self._elements.shape[0], self._nodes.shape[1]))
-        for i, corners in enumerate(self._elements):
-            element_vector = self._nodes[corners[1]] - self._nodes[corners[0]]
+        for i, corners in enumerate(self._corners):
+            element_vector = corners[1] - corners[0]
             element_length = np.sqrt(element_vector.dot(element_vector))
             normals[i] = element_vector.dot(
                 np.array([[0, -1], [1, 0]]))/element_length
