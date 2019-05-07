@@ -16,7 +16,28 @@ def line_integral(function, p0, p1, singular):
         return function(np.array([x0 + t*(x1-x0), y0 + t*(y1-y0)]))
 
     points = [.5] if singular else None
-    return length*quad(to_quad, 0, 1, points=points)[0]
+    return length*complex_quad(to_quad, 0, 1, points=points)
+
+
+def complex_quad(function, *args, **kwargs):
+
+    def real_function(*real_args, **real_kwargs):
+        return np.real(function(*real_args, **real_kwargs))
+
+    def imag_function(*imag_args, **imag_kwargs):
+        return np.imag(function(*imag_args, **imag_kwargs))
+
+    real_part = quad(real_function, *args, **kwargs)[0]
+    imag_part = quad(imag_function, *args, **kwargs)[0]
+
+    return real_part + 1j*imag_part
+
+
+def admitant_2d_integral(k, r, admittance, n, corners, singular, rho, omega):
+    def integral_function(rs):
+        return h_2d(n, k, r, rs) + 1j*omega*rho*admittance*g_2d(k, r, rs)
+    return (line_integral(integral_function, corners[0], corners[1], singular)
+            - singular/2)
 
 
 def h_2d(n, k, r, rs):

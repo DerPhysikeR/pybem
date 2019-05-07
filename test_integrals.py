@@ -6,7 +6,7 @@
 import numpy as np
 from scipy.special import hankel2
 import pytest
-from integrals import g_2d, h_2d, line_integral
+from integrals import g_2d, h_2d, admitant_2d_integral, line_integral
 
 
 @pytest.mark.parametrize('k, r, rs, solution', [
@@ -45,3 +45,27 @@ def test_line_integral_singular():
 
     result = line_integral(singular_function, [-1, 0], [1, 0], True)
     np.testing.assert_almost_equal(0, result)
+
+
+def test_admitant_2d_integral():
+    result = admitant_2d_integral(1, np.array([1, 0]), 1, np.array([0, 1]),
+                                  np.array([[0, -.5], [0, .5]]), False, 1, 1)
+    assert isinstance(result, complex)
+
+
+def test_admitant_2d_integral_singular():
+    result = admitant_2d_integral(1, np.array([0, 0]), 1, np.array([0, 1]),
+                                  np.array([[0, -.5], [0, .5]]), True, 1, 1)
+    assert isinstance(result, complex)
+
+
+def test_admitant_2d_integral_fully_reflective_single_plane():
+    result = admitant_2d_integral(1, np.array([0, 1]), 0, np.array([1, 0]),
+                                  np.array([[0, -.5], [0, .5]]), False, 1, 1)
+    np.testing.assert_almost_equal(0, result)
+
+
+def test_admitant_2d_integral_fully_reflective_single_plane_singular():
+    result = admitant_2d_integral(1, np.array([0, 0]), 0, np.array([1, 0]),
+                                  np.array([[0, -.5], [0, .5]]), True, 1, 1)
+    np.testing.assert_almost_equal(-1/2, result)
