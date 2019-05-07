@@ -6,7 +6,7 @@
 import numpy as np
 from scipy.special import hankel2
 import pytest
-from integrals import g_2d, h_2d
+from integrals import g_2d, h_2d, line_integral
 
 
 @pytest.mark.parametrize('k, r, rs, solution', [
@@ -27,3 +27,21 @@ def test_g_2d(k, r, rs, solution):
 ])
 def test_h_2d(n, k, r, rs, solution):
     assert solution == h_2d(n, k, r, rs)
+
+
+def test_line_integral():
+
+    def square(coords):
+        return coords.dot(coords)
+
+    result = line_integral(square, [0, 0], [3, 4], False)
+    np.testing.assert_almost_equal(125/3, result)
+
+
+def test_line_integral_singular():
+
+    def singular_function(coords):
+        return 1/coords[0]
+
+    result = line_integral(singular_function, [-1, 0], [1, 0], True)
+    np.testing.assert_almost_equal(0, result)
