@@ -8,7 +8,7 @@ import numpy as np
 
 class Mesh:
 
-    def __init__(self, nodes, elements):
+    def __init__(self, nodes, elements, admittances=None):
         self._nodes = np.array(nodes)
         assert self._nodes.shape[1] == 2
         self._elements = np.array(elements)
@@ -16,6 +16,11 @@ class Mesh:
         self._corners = self._calc_corners()
         self._centers = self._calc_centers()
         self._normals = self._calc_normals()
+        if admittances is None:
+            self._admittances = np.zeros(len(elements), dtype=complex)
+        else:
+            assert len(admittances) == len(elements)
+            self._admittances = np.array(admittances, dtype=complex)
 
     @property
     def nodes(self):
@@ -36,6 +41,10 @@ class Mesh:
     @property
     def corners(self):
         return self._corners
+
+    @property
+    def admittances(self):
+        return self._admittances
 
     def _calc_corners(self):
         corners = np.empty((*self._elements.shape, self._nodes.shape[1]))

@@ -29,3 +29,12 @@ def test_mesh_centers(nodes, elements, center):
 ])
 def test_mesh_normals(nodes, elements, normals):
     np.testing.assert_allclose(normals, Mesh(nodes, elements).normals)
+
+
+@pytest.mark.parametrize('nodes, elements, admittances, reference', [
+    ([[0, 0], [1, 0]], [[0, 1]], [1], np.array([1], dtype=complex)),
+    ([[0, 0], [1, 0]], [[0, 1]], None, np.array([0], dtype=complex)),
+])
+def test_mesh_admittances(nodes, elements, admittances, reference):
+    np.testing.assert_allclose(reference,
+                               Mesh(nodes, elements, admittances).admittances)
