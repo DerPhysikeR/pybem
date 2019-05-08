@@ -9,9 +9,9 @@ import numpy as np
 class Mesh:
 
     def __init__(self, nodes, elements, admittances=None):
-        self._nodes = np.array(nodes)
+        self._nodes = np.array(nodes, dtype=float)
         assert self._nodes.shape[1] == 2
-        self._elements = np.array(elements)
+        self._elements = np.array(elements, dtype=int)
         assert self._elements.shape[1] == 2
         self._corners = self._calc_corners()
         self._centers = self._calc_centers()
