@@ -4,7 +4,7 @@
 @author: Paul Reiter
 """
 import numpy as np
-from scipy.integrate import quad
+from scipy.integrate import quad, fixed_quad
 from scipy.special import hankel2
 
 
@@ -15,8 +15,10 @@ def line_integral(function, p0, p1, singular):
     def to_quad(t):
         return function(np.array([x0 + t*(x1-x0), y0 + t*(y1-y0)]))
 
-    points = [.5] if singular else None
-    return length*complex_quad(to_quad, 0, 1, points=points)
+    if singular:
+        return length*complex_quad(to_quad, 0, 1, points=[.5])
+    else:
+        return length*fixed_quad(np.vectorize(to_quad), 0., 1.)[0]
 
 
 def complex_quad(function, *args, **kwargs):
