@@ -35,9 +35,9 @@ def complex_quad(function, *args, **kwargs):
     return real_part + 1j*imag_part
 
 
-def admitant_2d_integral(k, r, admittance, n, corners, singular, rho, omega):
+def admitant_2d_integral(k, r, admittance, n, corners, singular, rho, c):
     def integral_function(rs):
-        return h_2d(n, k, r, rs) + 1j*omega*rho*admittance*g_2d(k, r, rs)
+        return h_2d(n, k, r, rs) + 1j*k*c*rho*admittance*g_2d(k, r, rs)
     return (line_integral(integral_function, corners[0], corners[1], singular)
             - singular/2)
 
