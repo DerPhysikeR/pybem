@@ -5,7 +5,8 @@
 """
 import numpy as np
 from mesh import Mesh
-from pybem import complex_system_matrix
+from pybem import complex_system_matrix, calc_scattered_pressure_at
+from integrals import g_2d, admitant_2d_integral
 
 
 def test_complex_system_matrix():
@@ -18,3 +19,19 @@ def test_complex_system_matrix():
                                        dtype=complex)
     system_matrix = complex_system_matrix(mesh, integral_function, 1)
     np.testing.assert_allclose(reference_system_matrix, system_matrix)
+
+
+def test_calc_scattered_pressure_at():
+    # point source above fully reflective plane
+    n = 200
+    mesh = Mesh([(x, 0) for x in np.linspace(10, -10, n+1)],
+                [(i, i+1) for i in range(n)])
+    k, rho, omega = 2*np.pi*300/343, 1, 2*np.pi*300
+    surface_pressure = 2*np.array([g_2d(k, point, np.array([0., 1.]))
+                                   for point in mesh.centers], dtype=complex)
+    solution = calc_scattered_pressure_at(mesh, admitant_2d_integral, k,
+                                          surface_pressure,
+                                          np.array([[0., .5]]), rho, omega)
+    np.testing.assert_allclose(g_2d(k, np.array([0., .5]),
+                                    np.array([0., -1.])),
+                               solution[0], rtol=1e-3)

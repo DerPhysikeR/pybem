@@ -16,3 +16,17 @@ def complex_system_matrix(mesh, integral_function, k, *args, **kwargs):
                                   mesh.normals[j], mesh.corners[j], i == j,
                                   *args, **kwargs)
     return system_matrix
+
+
+def calc_scattered_pressure_at(mesh, integral_function, k, surface_pressure,
+                               microphone_points, *args, **kwargs):
+    assert len(mesh.elements) == len(surface_pressure)
+    microphone_points = np.array(microphone_points, dtype=float)
+    solution = np.zeros(len(microphone_points), dtype=complex)
+    for i, point in enumerate(microphone_points):
+        for j, sp in enumerate(surface_pressure):
+            solution[i] += sp*integral_function(k, point, mesh.admittances[j],
+                                                mesh.normals[j],
+                                                mesh.corners[j], False,
+                                                *args, **kwargs)
+    return solution
