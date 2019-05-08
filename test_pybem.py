@@ -57,3 +57,21 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane():
     np.testing.assert_allclose(g_2d(k, np.array([0., .5]),
                                     np.array([0., -1.])),
                                solution[0], rtol=1e-2)
+
+
+@pytest.mark.slow
+def test_calc_scattered_pressure_at_normal_plane_wave_admittance_plane():
+    # plane wave impinging normally on admittance plane
+    n = 180
+    # create admitant mesh
+    k, rho, omega = 2*np.pi*300/343, 1, 2*np.pi*300
+    mesh = Mesh([(x, 0) for x in np.linspace(9, -9, n+1)],
+                [(i, i+1) for i in range(n)], [1/343. for _ in range(n)])
+    system_matrix = complex_system_matrix(mesh, admitant_2d_integral, k, rho,
+                                          omega)
+    p_incoming = np.array([1. + 1j for point in mesh.centers], dtype=complex)
+    surface_pressure = np.linalg.solve(system_matrix, -p_incoming)
+    solution = calc_scattered_pressure_at(mesh, admitant_2d_integral, k,
+                                          surface_pressure,
+                                          np.array([[0., .5]]), rho, omega)
+    np.testing.assert_allclose(0+1, solution[0]+1, rtol=1e-2)
