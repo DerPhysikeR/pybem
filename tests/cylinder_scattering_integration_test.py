@@ -101,4 +101,4 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     # fig.savefig('surface_pressure_distribution.pdf')
     # plt.close(fig)
 
-    assert complex_relative_error(reference_result, result) < .01
+    assert complex_relative_error(reference_result, result) < .02
