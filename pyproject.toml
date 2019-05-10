@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pybem"
 version = "0.1.0"
-description = ""
+description = "A Boundary Element Method (BEM) implementation in python."
 authors = ["Paul Reiter <reiter.paul@gmail.com>"]
 
 [tool.poetry.dependencies]
