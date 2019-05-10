@@ -56,7 +56,7 @@ def test_admitant_2d_integral():
 
 def test_admitant_2d_integral_singular():
     result = pb.admitant_2d_integral(1, np.array([0, 0]), 1, np.array([0, 1]),
-                                     np.array([[0, -.5], [0, .5]]), True, 1, 1)
+                                     np.array([[0, 1], [0, 2]]), True, 1, 1)
     assert isinstance(result, complex)
 
 
