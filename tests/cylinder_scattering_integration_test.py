@@ -8,9 +8,7 @@ import numpy as np
 from scipy.special import hankel2, h2vp
 import pytest
 # import matplotlib.pyplot as plt
-from integrals import admitant_2d_integral
-from mesh import Mesh
-from pybem import complex_system_matrix, calc_scattered_pressure_at
+import pybem as pb
 
 
 def calc_coefficiencts(k, radius, rho_c, amplitude, admittance, max_order):
@@ -56,7 +54,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     angles = np.arange(0, 2*np.pi, 2*np.pi/element_count)
     nodes = [(np.cos(angle), np.sin(angle)) for angle in angles]
     elements = [(i, i+1) for i in range(len(nodes)-1)] + [(len(nodes)-1, 0)]
-    mesh = Mesh(nodes, elements, admittance*np.ones(len(elements)))
+    mesh = pb.Mesh(nodes, elements, admittance*np.ones(len(elements)))
 
     # microphone points
     radius = 2
@@ -72,10 +70,11 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     # BEM calculation
     p_incoming = np.array([amplitude*np.exp(1j*k*point[0])
                            for point in mesh.centers])
-    matrix = complex_system_matrix(mesh, admitant_2d_integral, k, rho, c)
+    matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_integral, k, rho, c)
     surface_pressure = np.linalg.solve(matrix, -p_incoming)
-    result = calc_scattered_pressure_at(mesh, admitant_2d_integral, k,
-                                        surface_pressure, mic_points, rho, c)
+    result = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
+                                           surface_pressure, mic_points, rho,
+                                           c)
 
     # # plotting
     # fig = plt.figure()
