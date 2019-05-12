@@ -16,11 +16,7 @@ class Mesh:
         self._corners = self._calc_corners()
         self._centers = self._calc_centers()
         self._normals = self._calc_normals()
-        if admittances is None:
-            self._admittances = np.zeros(len(elements), dtype=complex)
-        else:
-            assert len(admittances) == len(elements)
-            self._admittances = np.array(admittances, dtype=complex)
+        self.admittances = admittances
 
     @property
     def nodes(self):
@@ -45,6 +41,15 @@ class Mesh:
     @property
     def admittances(self):
         return self._admittances
+
+    @admittances.setter
+    def admittances(self, admittances):
+        if admittances is None:
+            self._admittances = np.zeros(len(self._elements), dtype=complex)
+        else:
+            admittances = np.array(admittances, dtype=complex)
+            assert admittances.shape == (len(self._elements),)
+            self._admittances = admittances
 
     def _calc_corners(self):
         corners = np.empty((*self._elements.shape, self._nodes.shape[1]),
