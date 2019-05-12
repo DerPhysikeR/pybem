@@ -16,8 +16,10 @@ def test_version():
 def test_complex_system_matrix():
     mesh = pb.Mesh([[0, 0], [1, 0], [1, 2]], [[0, 1], [1, 2]])
 
-    def integral_function(k, r, admittance, n, corners, singular):
-        return r[0] + 1j*r[1] + singular
+    # def integral_function(k, r, admittance, n, corners, singular):
+    def integral_function(k, mesh, row_idx, col_idx):
+        return (mesh.centers[row_idx][0] + 1j*mesh.centers[row_idx][1]
+                + (row_idx == col_idx))
 
     reference_system_matrix = np.array([[1.5, .5], [1 + 1j, 2 + 1j]],
                                        dtype=complex)
@@ -49,8 +51,9 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane():
     mesh = pb.Mesh([(x, 0) for x in np.linspace(4, -4, n+1)],
                    [(i, i+1) for i in range(n)])
     k, rho, c = 2*np.pi*300/343, 1, 343
-    system_matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_integral, k,
-                                             rho, c)
+    system_matrix = \
+        pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element_bm,
+                                 k, rho, c)
     p_incoming = np.array([pb.g_2d(k, point, np.array([0., 1.]))
                            for point in mesh.centers], dtype=complex)
     surface_pressure = np.linalg.solve(system_matrix, -p_incoming)
@@ -70,8 +73,9 @@ def test_calc_scattered_pressure_at_normal_plane_wave_admittance_plane():
     k, rho, c = 2*np.pi*300/343, 1, 343
     mesh = pb.Mesh([(x, 0) for x in np.linspace(9, -9, n+1)],
                    [(i, i+1) for i in range(n)], [1/343. for _ in range(n)])
-    system_matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_integral, k,
-                                             rho, c)
+    system_matrix = \
+        pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element_bm,
+                                 k, rho, c)
     p_incoming = np.array([1. + 1j for point in mesh.centers], dtype=complex)
     surface_pressure = np.linalg.solve(system_matrix, -p_incoming)
     solution = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,

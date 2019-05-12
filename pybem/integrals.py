@@ -42,6 +42,18 @@ def admitant_2d_integral(k, r, admittance, n, corners, singular, rho, c):
             - singular/2)
 
 
+def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
+    n, r = mesh.normals[col_idx], mesh.centers[row_idx]
+    corners, admittance = mesh.corners[col_idx], mesh.admittances[col_idx]
+    singular = row_idx == col_idx
+
+    def integral_function(rs):
+        return h_2d(n, k, r, rs) + 1j*k*c*rho*admittance*g_2d(k, r, rs)
+
+    return (line_integral(integral_function, corners[0], corners[1], singular)
+            - singular/2)
+
+
 def h_2d(n, k, r, rs):
     distance = np.sqrt((r-rs).dot(r-rs))
     scaling = 1j*k*n.dot(r - rs)/distance/8

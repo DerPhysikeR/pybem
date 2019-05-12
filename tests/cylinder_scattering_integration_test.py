@@ -70,7 +70,8 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     # BEM calculation
     p_incoming = np.array([amplitude*np.exp(1j*k*point[0])
                            for point in mesh.centers])
-    matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_integral, k, rho, c)
+    matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element_bm,
+                                      k, rho, c)
     surface_pressure = np.linalg.solve(matrix, -p_incoming)
     result = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                            surface_pressure, mic_points, rho,
