@@ -48,26 +48,12 @@ def test_line_integral_singular():
 
 
 def test_admitant_2d_integral():
-    result = pb.admitant_2d_integral(1, np.array([1, 0]), 1, np.array([0, 1]),
-                                     np.array([[0, -.5], [0, .5]]),
-                                     False, 1, 1)
-    assert isinstance(result, complex)
-
-
-def test_admitant_2d_integral_singular():
-    result = pb.admitant_2d_integral(1, np.array([0, 0]), 1, np.array([0, 1]),
-                                     np.array([[0, 1], [0, 2]]), True, 1, 1)
+    mesh = pb.Mesh(np.array([[0, 0], [1, 0]]), np.array([[0, 1]]))
+    result = pb.admitant_2d_integral(1, np.array([1, 0]), mesh, 0, 1, 1)
     assert isinstance(result, complex)
 
 
 def test_admitant_2d_integral_fully_reflective_single_plane():
-    result = pb.admitant_2d_integral(1, np.array([0, 1]), 0, np.array([1, 0]),
-                                     np.array([[0, -.5], [0, .5]]),
-                                     False, 1, 1)
+    mesh = pb.Mesh(np.array([[0, -.5], [0, .5]]), np.array([[0, 1]]))
+    result = pb.admitant_2d_integral(1, np.array([0, 1]), mesh, 0, 1, 1)
     np.testing.assert_almost_equal(0, result)
-
-
-def test_admitant_2d_integral_fully_reflective_single_plane_singular():
-    result = pb.admitant_2d_integral(1, np.array([0, 0]), 0, np.array([1, 0]),
-                                     np.array([[0, -.5], [0, .5]]), True, 1, 1)
-    np.testing.assert_almost_equal(-1/2, result)

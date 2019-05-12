@@ -23,8 +23,6 @@ def calc_scattered_pressure_at(mesh, integral_function, k, surface_pressure,
     solution = np.zeros(len(microphone_points), dtype=complex)
     for i, point in enumerate(microphone_points):
         for j, sp in enumerate(surface_pressure):
-            solution[i] += sp*integral_function(k, point, mesh.admittances[j],
-                                                mesh.normals[j],
-                                                mesh.corners[j], False,
+            solution[i] += sp*integral_function(k, point, mesh, j,
                                                 *args, **kwargs)
     return solution

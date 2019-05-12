@@ -35,11 +35,15 @@ def complex_quad(function, *args, **kwargs):
     return real_part + 1j*imag_part
 
 
-def admitant_2d_integral(k, r, admittance, n, corners, singular, rho, c):
+def admitant_2d_integral(k, point, mesh, idx, rho, c):
+    n = mesh.normals[idx]
+    admittance = mesh.admittances[idx]
+    corners = mesh.corners[idx]
+
     def integral_function(rs):
-        return h_2d(n, k, r, rs) + 1j*k*c*rho*admittance*g_2d(k, r, rs)
-    return (line_integral(integral_function, corners[0], corners[1], singular)
-            - singular/2)
+        return h_2d(n, k, point, rs) + 1j*k*c*rho*admittance*g_2d(k, point, rs)
+
+    return (line_integral(integral_function, corners[0], corners[1], False))
 
 
 def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
