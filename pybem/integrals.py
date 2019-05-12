@@ -46,6 +46,18 @@ def admitant_2d_integral(k, point, mesh, idx, rho, c):
     return (line_integral(integral_function, corners[0], corners[1], False))
 
 
+def admitant_2d_matrix_element(k, mesh, row_idx, col_idx, rho, c):
+    n, r = mesh.normals[col_idx], mesh.centers[row_idx]
+    corners, admittance = mesh.corners[col_idx], mesh.admittances[col_idx]
+    singular = row_idx == col_idx
+
+    def integral_function(rs):
+        return h_2d(n, k, r, rs) + 1j*k*c*rho*admittance*g_2d(k, r, rs)
+
+    return (line_integral(integral_function, corners[0], corners[1], singular)
+            - singular/2)
+
+
 def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
     n, r = mesh.normals[col_idx], mesh.centers[row_idx]
     corners, admittance = mesh.corners[col_idx], mesh.admittances[col_idx]
