@@ -13,7 +13,7 @@ import pybem as pb
 
 def calc_coefficiencts(k, radius, rho_c, amplitude, admittance, max_order):
     orders = np.arange(max_order+1)
-    thetas = 2*np.pi*orders/len(orders)
+    thetas = np.pi*orders/len(orders)
     rhs = (amplitude*np.exp(1j*k*radius*np.cos(thetas)) *
            (np.cos(thetas)/rho_c - admittance))
     matrix = np.array([[np.cos(n*theta) * (1j*h2vp(n, k*radius)/rho_c +
@@ -46,11 +46,12 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     k = ka  # for radius = 1
     amplitude = 1+1j
     rho, c = 1, 343
-    element_size = 1/k/12
+    element_size = 1/k/16
 
     # create mesh
     element_count = int(np.ceil(2*np.pi/element_size))
-    element_count = 72 if element_count < 10 else element_count
+    min_count = 180
+    element_count = min_count if element_count < min_count else element_count
     angles = np.arange(0, 2*np.pi, 2*np.pi/element_count)
     nodes = [(np.cos(angle), np.sin(angle)) for angle in angles]
     elements = [(i, i+1) for i in range(len(nodes)-1)] + [(len(nodes)-1, 0)]
@@ -63,7 +64,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
                   for angle in mic_angles]
 
     # reference caclculation
-    coefficients = calc_coefficiencts(k, 1, rho*c, amplitude, admittance, 80)
+    coefficients = calc_coefficiencts(k, 1, rho*c, amplitude, admittance, 100)
     reference_result = [pressure_expansion(k, coefficients, radius, theta)
                         for theta in mic_angles]
 
@@ -101,4 +102,4 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     # fig.savefig('surface_pressure_distribution.pdf')
     # plt.close(fig)
 
-    assert complex_relative_error(reference_result, result) < .02
+    assert complex_relative_error(reference_result, result) < 1e-3
