@@ -13,10 +13,10 @@ import pybem as pb
 
 def calc_coefficiencts(k, radius, rho_c, amplitude, admittance, max_order):
     orders = np.arange(max_order+1)
-    thetas = 2*np.pi*orders/len(orders)
+    thetas = np.pi*orders/len(orders)
     rhs = (amplitude*np.exp(1j*k*radius*np.cos(thetas)) *
-           (admittance + np.cos(thetas)/rho_c))
-    matrix = np.array([[np.cos(n*theta) * (1j*h2vp(n, k*radius)/rho_c -
+           (np.cos(thetas)/rho_c - admittance))
+    matrix = np.array([[np.cos(n*theta) * (1j*h2vp(n, k*radius)/rho_c +
                                            admittance*hankel2(n, k*radius))
                         for n in orders]
                        for theta in thetas])
@@ -39,7 +39,7 @@ def complex_relative_error(reference, to_test):
 
 
 @pytest.mark.parametrize('ka', [.5, 2])
-@pytest.mark.parametrize('admittance', [0, 343])
+@pytest.mark.parametrize('admittance', [0, 1/343])
 @pytest.mark.parametrize('matrix_element_function', [
     pb.admitant_2d_matrix_element,
     pb.admitant_2d_matrix_element_bm
@@ -51,11 +51,12 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance,
     k = ka  # for radius = 1
     amplitude = 1+1j
     rho, c = 1, 343
-    element_size = 1/k/12
+    element_size = 1/k/16
 
     # create mesh
     element_count = int(np.ceil(2*np.pi/element_size))
-    element_count = 72 if element_count < 10 else element_count
+    min_count = 180
+    element_count = min_count if element_count < min_count else element_count
     angles = np.arange(0, 2*np.pi, 2*np.pi/element_count)
     nodes = [(np.cos(angle), np.sin(angle)) for angle in angles]
     elements = [(i, i+1) for i in range(len(nodes)-1)] + [(len(nodes)-1, 0)]
@@ -68,7 +69,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance,
                   for angle in mic_angles]
 
     # reference caclculation
-    coefficients = calc_coefficiencts(k, 1, rho*c, amplitude, admittance, 80)
+    coefficients = calc_coefficiencts(k, 1, rho*c, amplitude, admittance, 100)
     reference_result = [pressure_expansion(k, coefficients, radius, theta)
                         for theta in mic_angles]
 
@@ -77,7 +78,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance,
                            for point in mesh.centers])
     matrix = pb.complex_system_matrix(mesh, matrix_element_function,
                                       k, rho, c)
-    surface_pressure = np.linalg.solve(matrix, -p_incoming)
+    surface_pressure = np.linalg.solve(matrix, p_incoming)
     result = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                            surface_pressure, mic_points, rho,
                                            c)
@@ -107,4 +108,4 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance,
     # fig.savefig('surface_pressure_distribution.pdf')
     # plt.close(fig)
 
-    assert complex_relative_error(reference_result, result) < .02
+    assert complex_relative_error(reference_result, result) < 1e-3

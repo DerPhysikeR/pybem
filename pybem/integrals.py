@@ -41,7 +41,8 @@ def admitant_2d_integral(k, point, mesh, idx, rho, c):
     corners = mesh.corners[idx]
 
     def integral_function(rs):
-        return h_2d(n, k, point, rs) + 1j*k*c*rho*admittance*g_2d(k, point, rs)
+        return (- h_2d(n, k, point, rs)
+                + 1j*k*c*rho*admittance*g_2d(k, point, rs))
 
     return (line_integral(integral_function, corners[0], corners[1], False))
 
@@ -52,10 +53,10 @@ def admitant_2d_matrix_element(k, mesh, row_idx, col_idx, rho, c):
     singular = row_idx == col_idx
 
     def integral_function(rs):
-        return h_2d(n, k, r, rs) + 1j*k*c*rho*admittance*g_2d(k, r, rs)
+        return h_2d(n, k, r, rs) - 1j*k*c*rho*admittance*g_2d(k, r, rs)
 
     return (line_integral(integral_function, corners[0], corners[1], singular)
-            - singular/2)
+            + singular/2)
 
 
 def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
@@ -64,15 +65,15 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
     singular = row_idx == col_idx
 
     def integral_function(rs):
-        return h_2d(n, k, r, rs) + 1j*k*c*rho*admittance*g_2d(k, r, rs)
+        return h_2d(n, k, r, rs) - 1j*k*c*rho*admittance*g_2d(k, r, rs)
 
     return (line_integral(integral_function, corners[0], corners[1], singular)
-            - singular/2)
+            + singular/2)
 
 
 def h_2d(n, k, r, rs):
     distance = np.sqrt((r-rs).dot(r-rs))
-    scaling = 1j*k*n.dot(r - rs)/distance/8
+    scaling = 1j*k*n.dot(rs - r)/distance/8
     return scaling*(hankel2(-1, k*distance) - hankel2(1, k*distance))
 
 

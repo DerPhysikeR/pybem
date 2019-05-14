@@ -26,7 +26,7 @@ def test_g_2d(k, r, rs, solution):
      1j/8 * (hankel2(-1, 2) - hankel2(1, 2))),
 ])
 def test_h_2d(n, k, r, rs, solution):
-    assert solution == -pb.h_2d(n, k, r, rs)
+    assert solution == pb.h_2d(n, k, r, rs)
 
 
 def test_line_integral():
