@@ -26,7 +26,7 @@ def test_g_2d(k, r, rs, solution):
      1j/8 * (hankel2(-1, 2) - hankel2(1, 2))),
 ])
 def test_h_2d(n, k, r, rs, solution):
-    assert solution == -pb.h_2d(n, k, r, rs)
+    assert solution == pb.h_2d(n, k, r, rs)
 
 
 def test_line_integral():
@@ -70,4 +70,4 @@ def test_admitant_2d_integral_fully_reflective_single_plane():
 def test_admitant_2d_integral_fully_reflective_single_plane_singular():
     result = pb.admitant_2d_integral(1, np.array([0, 0]), 0, np.array([1, 0]),
                                      np.array([[0, -.5], [0, .5]]), True, 1, 1)
-    np.testing.assert_almost_equal(-1/2, result)
+    np.testing.assert_almost_equal(1/2, result)

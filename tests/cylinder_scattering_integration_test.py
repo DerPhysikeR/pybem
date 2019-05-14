@@ -15,8 +15,8 @@ def calc_coefficiencts(k, radius, rho_c, amplitude, admittance, max_order):
     orders = np.arange(max_order+1)
     thetas = 2*np.pi*orders/len(orders)
     rhs = (amplitude*np.exp(1j*k*radius*np.cos(thetas)) *
-           (admittance + np.cos(thetas)/rho_c))
-    matrix = np.array([[np.cos(n*theta) * (1j*h2vp(n, k*radius)/rho_c -
+           (np.cos(thetas)/rho_c - admittance))
+    matrix = np.array([[np.cos(n*theta) * (1j*h2vp(n, k*radius)/rho_c +
                                            admittance*hankel2(n, k*radius))
                         for n in orders]
                        for theta in thetas])
@@ -39,7 +39,7 @@ def complex_relative_error(reference, to_test):
 
 
 @pytest.mark.parametrize('ka', [.5, 2])
-@pytest.mark.parametrize('admittance', [0, 343])
+@pytest.mark.parametrize('admittance', [0, 1/343])
 @pytest.mark.slow
 def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     # set constants
@@ -71,7 +71,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance):
     p_incoming = np.array([amplitude*np.exp(1j*k*point[0])
                            for point in mesh.centers])
     matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_integral, k, rho, c)
-    surface_pressure = np.linalg.solve(matrix, -p_incoming)
+    surface_pressure = np.linalg.solve(matrix, p_incoming)
     result = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                            surface_pressure, mic_points, rho,
                                            c)

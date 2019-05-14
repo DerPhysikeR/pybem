@@ -53,7 +53,7 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane():
                                              rho, c)
     p_incoming = np.array([pb.g_2d(k, point, np.array([0., 1.]))
                            for point in mesh.centers], dtype=complex)
-    surface_pressure = np.linalg.solve(system_matrix, -p_incoming)
+    surface_pressure = np.linalg.solve(system_matrix, p_incoming)
     solution = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                              surface_pressure,
                                              np.array([[0., .5]]), rho, c)
@@ -73,7 +73,7 @@ def test_calc_scattered_pressure_at_normal_plane_wave_admittance_plane():
     system_matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_integral, k,
                                              rho, c)
     p_incoming = np.array([1. + 1j for point in mesh.centers], dtype=complex)
-    surface_pressure = np.linalg.solve(system_matrix, -p_incoming)
+    surface_pressure = np.linalg.solve(system_matrix, p_incoming)
     solution = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                              surface_pressure,
                                              np.array([[0., .5]]), rho, c)
