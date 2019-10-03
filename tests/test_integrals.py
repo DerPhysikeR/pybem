@@ -25,8 +25,8 @@ def test_g_2d(k, r, rs, solution):
     (np.array([.5, 1]), 2, np.array([0, 0]), np.array([1, 0]),
      1j/8 * (hankel2(-1, 2) - hankel2(1, 2))),
 ])
-def test_h_2d(n, k, r, rs, solution):
-    assert solution == pb.h_2d(n, k, r, rs)
+def test_hs_2d(n, k, r, rs, solution):
+    assert solution == pb.hs_2d(n, k, r, rs)
 
 
 def test_line_integral():
