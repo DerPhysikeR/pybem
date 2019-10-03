@@ -40,13 +40,12 @@ def complex_relative_error(reference, to_test):
 
 @pytest.mark.parametrize('ka', [.5, 2])
 @pytest.mark.parametrize('admittance', [0, 1/343])
-@pytest.mark.parametrize('matrix_element_function', [
-    pb.admitant_2d_matrix_element,
-    pb.admitant_2d_matrix_element_bm
+@pytest.mark.parametrize('solver', [
+    pb.simple_solver,
+    # pb.burton_miller_solver,
 ])
 @pytest.mark.slow
-def test_plane_wave_admittance_cylinder_scattering(ka, admittance,
-                                                   matrix_element_function):
+def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     # set constants
     k = ka  # for radius = 1
     amplitude = 1+1j
@@ -76,9 +75,9 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance,
     # BEM calculation
     p_incoming = np.array([amplitude*np.exp(1j*k*point[0])
                            for point in mesh.centers])
-    matrix = pb.complex_system_matrix(mesh, matrix_element_function,
-                                      k, rho, c)
-    surface_pressure = np.linalg.solve(matrix, p_incoming)
+    grad_p_incoming = np.array([[1j*k*amplitude*np.exp(1j*k*point[0]), 0]
+                               for point in mesh.centers])
+    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
     result = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                            surface_pressure, mic_points, rho,
                                            c)

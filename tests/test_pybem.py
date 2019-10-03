@@ -44,19 +44,22 @@ def test_calc_scattered_pressure_at():
 
 
 @pytest.mark.slow
-def test_calc_scattered_pressure_at_point_source_reflective_plane():
+@pytest.mark.parametrize('solver', [
+    pb.simple_solver,
+    # pb.burton_miller_solver,
+])
+def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
     # actually solve the linear system for point source above reflective plane
     n = 80
     # create admitant mesh
     mesh = pb.Mesh([(x, 0) for x in np.linspace(4, -4, n+1)],
                    [(i, i+1) for i in range(n)])
     k, rho, c = 2*np.pi*300/343, 1, 343
-    system_matrix = \
-        pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element_bm,
-                                 k, rho, c)
     p_incoming = np.array([pb.g_2d(k, point, np.array([0., 1.]))
                            for point in mesh.centers], dtype=complex)
-    surface_pressure = np.linalg.solve(system_matrix, p_incoming)
+    grad_p_incoming = np.array([pb.vector_hs_2d(k, point, np.array([0., 1.]))
+                               for point in mesh.centers], dtype=complex)
+    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
     solution = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                              surface_pressure,
                                              np.array([[0., .5]]), rho, c)
@@ -66,18 +69,23 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane():
 
 
 @pytest.mark.slow
-def test_calc_scattered_pressure_at_normal_plane_wave_admittance_plane():
+@pytest.mark.parametrize('solver', [
+    pb.simple_solver,
+    # pb.burton_miller_solver,
+])
+def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
     # plane wave impinging normally on admittance plane
     n = 180
     # create admitant mesh
     k, rho, c = 2*np.pi*300/343, 1, 343
     mesh = pb.Mesh([(x, 0) for x in np.linspace(9, -9, n+1)],
                    [(i, i+1) for i in range(n)], [1/343. for _ in range(n)])
-    system_matrix = \
-        pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element_bm,
-                                 k, rho, c)
-    p_incoming = np.array([1. + 1j for point in mesh.centers], dtype=complex)
-    surface_pressure = np.linalg.solve(system_matrix, p_incoming)
+    p_incoming = np.array([np.exp(1j*k*point[1])
+                           for point in mesh.centers], dtype=complex)
+    grad_p_incoming = np.array([[1j*k*np.exp(1j*k*point[1]), 0]
+                                for point in mesh.centers],
+                               dtype=complex)
+    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
     solution = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
                                              surface_pressure,
                                              np.array([[0., .5]]), rho, c)

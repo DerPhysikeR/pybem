@@ -71,10 +71,16 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
             + singular/2)
 
 
-def hs_2d(n, k, r, rs):
+
+
+def vector_hs_2d(k, r, rs):
     distance = np.sqrt((r-rs).dot(r-rs))
-    scaling = 1j*k*n.dot(rs - r)/distance/8
+    scaling = 1j*k*(r - rs)/distance/8
     return scaling*(hankel2(-1, k*distance) - hankel2(1, k*distance))
+
+
+def hs_2d(n, k, r, rs):
+    return n.dot(-vector_hs_2d(k, r, rs))
 
 
 def h_2d(n, k, r, rs):
