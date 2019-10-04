@@ -71,6 +71,15 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
             + singular/2)
 
 
+def hypersingular(k, r, rs, n, ns):
+    vector = r-rs
+    dist = np.sqrt(vector.dot(vector))
+    a = hankel2(-1, k*dist) - hankel2(1, k*dist)
+    b = hankel2(-2, k*dist) - 2*hankel2(0, k*dist) + hankel2(2, k*dist)
+    return -1j*k/8*(a*(1/dist - n.dot(vector)*ns.dot(vector)/dist**3) +
+                    b*(k/2 * n.dot(vector)*ns.dot(vector)/dist**2))
+
+
 
 
 def vector_hs_2d(k, r, rs):

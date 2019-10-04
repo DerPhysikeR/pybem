@@ -57,3 +57,33 @@ def test_admitant_2d_integral_fully_reflective_single_plane():
     mesh = pb.Mesh(np.array([[0, -.5], [0, .5]]), np.array([[0, 1]]))
     result = pb.admitant_2d_integral(1, np.array([0, 1]), mesh, 0, 1, 1)
     np.testing.assert_almost_equal(0, result)
+
+
+def test_hypersingular_is_scalar():
+    with pytest.raises(TypeError):
+        len(pb.hypersingular(1, np.array([2, 3]), np.array([3, 2]),
+                             np.array([1, 0]), np.array([0, 1])))
+
+
+def test_hypersingular_is_complex():
+    assert isinstance(pb.hypersingular(1, np.array([2, 3]), np.array([3, 2]),
+                                       np.array([1, 0]), np.array([0, 1])),
+                      np.complex128)
+
+
+def test_hypersingular_is_equal_after_swap_of_coordinates():
+    assert (
+        pb.hypersingular(1, np.array([2, 3]), np.array([3, 2]),
+                         np.array([1, 0]), np.array([0, 1]))
+        ==
+        pb.hypersingular(1, np.array([3, 2]), np.array([2, 3]),
+                         np.array([1, 0]), np.array([0, 1]))
+        )
+
+
+def test_hypersingular_for_both_normal_vectors_being_zero():
+    k, distance = 3, 5
+    np.testing.assert_almost_equal(
+        pb.hypersingular(k, np.array([0, 0]), np.array([distance, 0]),
+                         np.array([0, 0]), np.array([0, 0])),
+        -1j*k*(hankel2(-1, k*distance) - hankel2(1, k*distance))/8/distance)
