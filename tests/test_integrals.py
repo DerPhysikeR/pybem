@@ -29,6 +29,28 @@ def test_hs_2d(n, k, r, rs, solution):
     assert solution == pb.hs_2d(n, k, r, rs)
 
 
+def test_h_2d_is_gradient_of_g_2d():
+    k, r, rs, n = 3, np.array([2, 0]), np.array([0, 0]), np.array([1, 0])
+    delta = np.array([1e-8, 0])
+    np.testing.assert_almost_equal(
+        pb.h_2d(n, k, r, rs),
+        (pb.g_2d(k, r+delta/2, rs) - pb.g_2d(k, r-delta/2, rs)) / delta[0]
+    )
+
+
+def test_vector_h_2d_is_gradient_of_g_2d():
+    k, r, rs = 3, np.array([1, 1]), np.array([0, 0]),
+    delta = 1e-8
+    delta_x, delta_y = np.array([delta, 0]), np.array([0, delta])
+    np.testing.assert_almost_equal(
+        pb.vector_h_2d(k, r, rs),
+        np.array([
+            (pb.g_2d(k, r+delta_x/2, rs) - pb.g_2d(k, r-delta_x/2, rs)),
+            (pb.g_2d(k, r+delta_y/2, rs) - pb.g_2d(k, r-delta_y/2, rs))
+        ])/delta
+    )
+
+
 def test_line_integral():
 
     def square(coords):

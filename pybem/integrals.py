@@ -82,19 +82,24 @@ def hypersingular(k, r, rs, n, ns):
 
 
 
-def vector_hs_2d(k, r, rs):
+def vector_h_2d(k, r, rs):
+    """Vectorial gradient of the 2D Green's function acoording to the obverver
+       point r"""
     distance = np.sqrt((r-rs).dot(r-rs))
     scaling = 1j*k*(r - rs)/distance/8
     return scaling*(hankel2(-1, k*distance) - hankel2(1, k*distance))
 
 
-def hs_2d(n, k, r, rs):
-    return n.dot(-vector_hs_2d(k, r, rs))
+def hs_2d(ns, k, r, rs):
+    """Gradient of the 2D Green's function according to the source point rs"""
+    return -h_2d(ns, k, r, rs)
 
 
 def h_2d(n, k, r, rs):
-    return -hs_2d(n, k, r, rs)
+    """Gradient of the 2D Green's function according to the obverver point r"""
+    return n.dot(vector_h_2d(k, r, rs))
 
 
 def g_2d(k, r, rs):
+    """2D Green's function"""
     return 1j*hankel2(0, k*np.sqrt((r-rs).dot(r-rs)))/4
