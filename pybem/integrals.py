@@ -80,6 +80,8 @@ def hypersingular(k, r, rs, n, ns):
                     b*(k/2 * n.dot(vector)*ns.dot(vector)/dist**2))
 
 
+def burton_miller_rhs(k, mesh, p_inc, grad_p_inc):
+    return p_inc + (grad_p_inc * mesh.normals).sum(axis=1)*1j/k
 
 
 def vector_h_2d(k, r, rs):

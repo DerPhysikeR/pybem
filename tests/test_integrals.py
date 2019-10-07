@@ -3,6 +3,7 @@
 2019-05-05 12:18:24
 @author: Paul Reiter
 """
+import types
 import numpy as np
 from scipy.special import hankel2
 import pytest
@@ -109,3 +110,15 @@ def test_hypersingular_for_both_normal_vectors_being_zero():
         pb.hypersingular(k, np.array([0, 0]), np.array([distance, 0]),
                          np.array([0, 0]), np.array([0, 0])),
         -1j*k*(hankel2(-1, k*distance) - hankel2(1, k*distance))/8/distance)
+
+
+def test_burton_miller_rhs():
+    k = 1
+    p_inc = np.array([1, 2])
+    grad_p_inc = np.array([[2, 2], [3, 3]])
+    mesh = types.SimpleNamespace()
+    mesh.normals = np.array([[1, 0], [0, 1]])
+    np.testing.assert_almost_equal(
+        pb.burton_miller_rhs(k, mesh, p_inc, grad_p_inc),
+        np.array([1+2j, 2+3j])
+    )
