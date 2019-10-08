@@ -104,14 +104,6 @@ def test_hypersingular_is_equal_after_swap_of_coordinates():
         )
 
 
-def test_hypersingular_for_both_normal_vectors_being_zero():
-    k, distance = 3, 5
-    np.testing.assert_almost_equal(
-        pb.hypersingular(k, np.array([0, 0]), np.array([distance, 0]),
-                         np.array([0, 0]), np.array([0, 0])),
-        -1j*k*(hankel2(-1, k*distance) - hankel2(1, k*distance))/8/distance)
-
-
 def test_burton_miller_rhs():
     k = 1
     p_inc = np.array([1, 2])
@@ -121,4 +113,20 @@ def test_burton_miller_rhs():
     np.testing.assert_almost_equal(
         pb.burton_miller_rhs(k, mesh, p_inc, grad_p_inc),
         np.array([1+2j, 2+3j])
+    )
+
+
+@pytest.mark.parametrize('k, r, n', [
+    (2, np.array([2, 1]), np.array([-1, 0])),
+    (1, np.array([2, 1]), np.array([-1, 0])),
+    (1, np.array([2, 0]), np.array([0, 1])),
+    (1, np.array([2, 0]), np.array([0, -1])),
+])
+def test_hypersingular_is_gradient_of_h(k, r, n):
+    rs, ns = np.array([0, 0]), np.array([0, 1])
+    delta = 1e-8
+    delta_n = n * delta / 2
+    np.testing.assert_almost_equal(
+        pb.hypersingular(k, r, rs, n, ns),
+        (pb.hs_2d(ns, k, r+delta_n, rs) - pb.hs_2d(ns, k, r-delta_n, rs))/delta
     )
