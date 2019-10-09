@@ -121,6 +121,7 @@ def test_burton_miller_rhs():
     (1, np.array([2, 1]), np.array([-1, 0])),
     (1, np.array([2, 0]), np.array([0, 1])),
     (1, np.array([2, 0]), np.array([0, -1])),
+    (5, np.array([0, 5]), np.array([0, 1])),
 ])
 def test_hypersingular_is_gradient_of_h(k, r, n):
     rs, ns = np.array([0, 0]), np.array([0, 1])
