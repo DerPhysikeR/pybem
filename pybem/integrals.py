@@ -60,15 +60,22 @@ def admitant_2d_matrix_element(k, mesh, row_idx, col_idx, rho, c):
 
 
 def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
-    n, r = mesh.normals[col_idx], mesh.centers[row_idx]
+    n, ns = mesh.normals[row_idx], mesh.normals[col_idx]
+    r = mesh.centers[row_idx]
     corners, admittance = mesh.corners[col_idx], mesh.admittances[col_idx]
     singular = row_idx == col_idx
+    z0 = rho*c
 
     def integral_function(rs):
-        return hs_2d(n, k, r, rs) - 1j*k*c*rho*admittance*g_2d(k, r, rs)
+        return (
+            hs_2d(ns, k, r, rs)
+            - 1j*k*z0*admittance*g_2d(k, r, rs)
+            - z0*admittance*h_2d(n, k, r, rs)
+            - 1j/k * hypersingular(k, r, rs, n, ns)
+        )
 
     return (line_integral(integral_function, corners[0], corners[1], singular)
-            + singular/2)
+            + singular*(1 + z0*admittance)/2)
 
 
 def hypersingular(k, r, rs, n, ns):
@@ -81,7 +88,7 @@ def hypersingular(k, r, rs, n, ns):
 
 
 def burton_miller_rhs(k, mesh, p_inc, grad_p_inc):
-    return p_inc + (grad_p_inc * mesh.normals).sum(axis=1)*1j/k
+    return p_inc - (grad_p_inc * mesh.normals).sum(axis=1)*1j/k
 
 
 def vector_h_2d(k, r, rs):

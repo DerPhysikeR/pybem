@@ -107,12 +107,12 @@ def test_hypersingular_is_equal_after_swap_of_coordinates():
 def test_burton_miller_rhs():
     k = 1
     p_inc = np.array([1, 2])
-    grad_p_inc = np.array([[2, 2], [3, 3]])
+    grad_p_inc = np.array([[2, 3], [2, 3]])
     mesh = types.SimpleNamespace()
     mesh.normals = np.array([[1, 0], [0, 1]])
     np.testing.assert_almost_equal(
         pb.burton_miller_rhs(k, mesh, p_inc, grad_p_inc),
-        np.array([1+2j, 2+3j])
+        np.array([1-2j, 2-3j])
     )
 
 

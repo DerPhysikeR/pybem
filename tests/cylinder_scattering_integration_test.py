@@ -42,7 +42,7 @@ def complex_relative_error(reference, to_test):
 @pytest.mark.parametrize('admittance', [0, 1/343])
 @pytest.mark.parametrize('solver', [
     pb.simple_solver,
-    # pb.burton_miller_solver,
+    pb.burton_miller_solver,
 ])
 @pytest.mark.slow
 def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
@@ -107,4 +107,4 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     # fig.savefig('surface_pressure_distribution.pdf')
     # plt.close(fig)
 
-    assert complex_relative_error(reference_result, result) < 1e-3
+    assert complex_relative_error(reference_result, result) < 1e-2

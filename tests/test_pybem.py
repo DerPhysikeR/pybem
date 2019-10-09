@@ -46,7 +46,7 @@ def test_calc_scattered_pressure_at():
 @pytest.mark.slow
 @pytest.mark.parametrize('solver', [
     pb.simple_solver,
-    # pb.burton_miller_solver,
+    pb.burton_miller_solver,
 ])
 def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
     # actually solve the linear system for point source above reflective plane
@@ -57,7 +57,7 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
     k, rho, c = 2*np.pi*300/343, 1, 343
     p_incoming = np.array([pb.g_2d(k, point, np.array([0., 1.]))
                            for point in mesh.centers], dtype=complex)
-    grad_p_incoming = np.array([pb.vector_hs_2d(k, point, np.array([0., 1.]))
+    grad_p_incoming = np.array([pb.vector_h_2d(k, point, np.array([0., 1.]))
                                for point in mesh.centers], dtype=complex)
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
     solution = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
@@ -65,13 +65,13 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
                                              np.array([[0., .5]]), rho, c)
     np.testing.assert_allclose(pb.g_2d(k, np.array([0., .5]),
                                        np.array([0., -1.])),
-                               solution[0], rtol=1e-2)
+                               solution[0], rtol=2e-2)
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize('solver', [
     pb.simple_solver,
-    # pb.burton_miller_solver,
+    pb.burton_miller_solver,
 ])
 def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
     # plane wave impinging normally on admittance plane
