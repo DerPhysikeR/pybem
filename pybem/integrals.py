@@ -13,12 +13,12 @@ def line_integral(function, p0, p1, singular):
     length = np.sqrt((x1 - x0)**2 + (y1 - y0)**2)
 
     def to_quad(t):
-        return function(np.array([x0 + t*(x1-x0), y0 + t*(y1-y0)]))
+        return function(np.array([(x1+x0)/2 + t*(x1-x0)/2,
+                                  (y1+y0)/2 + t*(y1-y0)/2]))
 
     if singular:
-        return length*complex_quad(to_quad, 0, 1, points=[.5])
-    else:
-        return length*fixed_quad(np.vectorize(to_quad), 0., 1.)[0]
+        return length*complex_quad(to_quad, -1, 1, points=[0])/2
+    return length*fixed_quad(np.vectorize(to_quad), -1., 1.)[0]/2
 
 
 def complex_quad(function, *args, **kwargs):
