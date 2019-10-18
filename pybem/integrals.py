@@ -80,11 +80,12 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
 
 def hypersingular(k, r, rs, n, ns):
     vector = r-rs
-    dist = np.sqrt(vector.dot(vector))
-    a = hankel2(-1, k*dist) - hankel2(1, k*dist)
-    b = hankel2(-2, k*dist) - 2*hankel2(0, k*dist) + hankel2(2, k*dist)
-    return -1j*k/8*(a*(n.dot(ns)/dist - n.dot(vector)*ns.dot(vector)/dist**3) +
-                    b*(k/2 * n.dot(vector)*ns.dot(vector)/dist**2))
+    distance = np.sqrt(vector.dot(vector))
+    kdist = k*distance
+    return 1j*k/(4*distance**2) * (
+        distance*hankel2(1, kdist)*n.dot(ns)
+        - k*hankel2(2, kdist)*n.dot(vector)*ns.dot(vector)
+    )
 
 
 def burton_miller_rhs(k, mesh, p_inc, grad_p_inc):
@@ -95,8 +96,7 @@ def vector_h_2d(k, r, rs):
     """Vectorial gradient of the 2D Green's function acoording to the obverver
        point r"""
     distance = np.sqrt((r-rs).dot(r-rs))
-    scaling = 1j*k*(r - rs)/distance/8
-    return scaling*(hankel2(-1, k*distance) - hankel2(1, k*distance))
+    return -1j*k*(r-rs)/(4*distance) * hankel2(1, k*distance)
 
 
 def hs_2d(ns, k, r, rs):
