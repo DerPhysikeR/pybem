@@ -66,16 +66,29 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
     singular = row_idx == col_idx
     z0 = rho*c
 
-    def integral_function(rs):
-        return (
-            hs_2d(ns, k, r, rs)
-            - 1j*k*z0*admittance*g_2d(k, r, rs)
-            - z0*admittance*h_2d(n, k, r, rs)
-            - 1j/k * hypersingular(k, r, rs, n, ns)
-        )
+    if singular:
+        def integral_function(rs):
+            return (
+                hs_2d(ns, k, r, rs)
+                - 1j*k*z0*admittance*g_2d(k, r, rs)
+                - z0*admittance*h_2d(n, k, r, rs)
+                - 1j/k * hypersingular(k, r, rs, n, ns)
+            )
 
-    return (line_integral(integral_function, corners[0], corners[1], singular)
-            + singular*(1 + z0*admittance)/2)
+        return (line_integral(integral_function, corners[0], corners[1], singular)
+                + singular*(1 + z0*admittance)/2)
+
+    else:
+        def integral_function(rs):
+            return (
+                hs_2d(ns, k, r, rs)
+                - 1j*k*z0*admittance*g_2d(k, r, rs)
+                - z0*admittance*h_2d(n, k, r, rs)
+                - 1j/k * hypersingular(k, r, rs, n, ns)
+            )
+
+        return (line_integral(integral_function, corners[0], corners[1], singular)
+                + singular*(1 + z0*admittance)/2)
 
 
 def hypersingular(k, r, rs, n, ns):
