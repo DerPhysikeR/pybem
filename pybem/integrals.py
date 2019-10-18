@@ -68,11 +68,12 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
 
     if singular:
         def integral_function(rs):
+            vector = r-rs
+            distance = np.sqrt(vector.dot(vector))
+            kdist = k*distance
             return (
-                hs_2d(ns, k, r, rs)
-                - 1j*k*z0*admittance*g_2d(k, r, rs)
-                - z0*admittance*h_2d(n, k, r, rs)
-                - 1j/k * hypersingular(k, r, rs, n, ns)
+                k*z0*admittance*hankel2(0, kdist)/4
+                + hankel2(1, kdist)/(4*distance)
             )
 
         return (line_integral(integral_function, corners[0], corners[1], singular)
