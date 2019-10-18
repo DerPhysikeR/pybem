@@ -5,7 +5,7 @@
 """
 import numpy as np
 from scipy.integrate import quad, fixed_quad
-from scipy.special import hankel2
+from scipy.special import hankel2, struve
 
 
 def line_integral(function, p0, p1, singular):
@@ -72,12 +72,20 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
             distance = np.sqrt(vector.dot(vector))
             kdist = k*distance
             return (
-                k*z0*admittance*hankel2(0, kdist)/4
                 + hankel2(1, kdist)/(4*distance)
             )
 
-        return (line_integral(integral_function, corners[0], corners[1], singular)
-                + singular*(1 + z0*admittance)/2)
+        element_vector = corners[1] - corners[0]
+        length = np.sqrt(element_vector.dot(element_vector))
+        lk2 = length*k/2
+        return (
+            + z0*admittance*np.pi*length*k/8 * (
+                + hankel2(0, lk2)*struve(-1, lk2)
+                + hankel2(1, lk2)*struve(0, lk2)
+            )
+            + line_integral(integral_function, corners[0], corners[1], singular)
+            + singular*(1 + z0*admittance)/2
+        )
 
     else:
         def integral_function(rs):
