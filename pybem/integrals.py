@@ -74,14 +74,6 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
     z0 = rho*c
 
     if singular:
-        def integral_function(rs):
-            vector = r-rs
-            distance = np.sqrt(vector.dot(vector))
-            kdist = k*distance
-            return (
-                + hankel2(1, kdist)/(4*distance)
-            )
-
         element_vector = corners[1] - corners[0]
         length = np.sqrt(element_vector.dot(element_vector))
         lk2 = length*k/2
@@ -90,7 +82,8 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
                 + hankel2(0, lk2)*struve(-1, lk2)
                 + hankel2(1, lk2)*struve(0, lk2)
             )
-            + line_integral(integral_function, corners[0], corners[1], singular)
+            + fixed_quad(regularized_hypersingular_bm_part, 0, lk2)[0]/2
+            - 2j/(np.pi*k*length)
             + singular*(1 + z0*admittance)/2
         )
 
