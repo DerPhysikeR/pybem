@@ -59,6 +59,13 @@ def admitant_2d_matrix_element(k, mesh, row_idx, col_idx, rho, c):
             + singular/2)
 
 
+def regularized_hypersingular_bm_part(v):
+    return (
+        hankel2(1, v)/v
+        - 2j/(np.pi*v**2)  # regularization
+    )
+
+
 def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
     n, ns = mesh.normals[row_idx], mesh.normals[col_idx]
     r = mesh.centers[row_idx]

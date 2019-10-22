@@ -6,8 +6,10 @@
 import types
 import numpy as np
 from scipy.special import hankel2
+from scipy.integrate import fixed_quad
 import pytest
 import pybem as pb
+from .cylinder_scattering_integration_test import complex_relative_error
 
 
 @pytest.mark.parametrize('k, r, rs, solution', [
@@ -131,3 +133,15 @@ def test_hypersingular_is_gradient_of_h(k, r, n):
         pb.hypersingular(k, r, rs, n, ns),
         (pb.hs_2d(ns, k, r+delta_n, rs) - pb.hs_2d(ns, k, r-delta_n, rs))/delta
     )
+
+
+@pytest.mark.parametrize('k, l', [
+    # 2*np.pi/(k*elements_per_wavelength)
+    (2, 2*np.pi/(2*6)),
+    (2, 2*np.pi/(2*10)),
+])
+def test_regularized_hypersingular_bm_part_numerical_accuracy(k, l):
+    assert complex_relative_error(
+        pb.complex_quad(pb.regularized_hypersingular_bm_part, 0, k*l/2),
+        fixed_quad(pb.regularized_hypersingular_bm_part, 0, k*l/2, n=20)[0],
+    ) < 1e-3
