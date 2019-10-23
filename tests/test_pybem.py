@@ -52,7 +52,7 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
     # actually solve the linear system for point source above reflective plane
     n = 80
     # create admitant mesh
-    mesh = pb.Mesh([(x, 0) for x in np.linspace(4, -4, n+1)],
+    mesh = pb.Mesh([(x, 0) for x in np.linspace(6, -6, n+1)],
                    [(i, i+1) for i in range(n)])
     k, rho, c = 2*np.pi*300/343, 1, 343
     p_incoming = np.array([pb.g_2d(k, point, np.array([0., 1.]))
@@ -65,7 +65,7 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
                                              np.array([[0., .5]]), rho, c)
     np.testing.assert_allclose(pb.g_2d(k, np.array([0., .5]),
                                        np.array([0., -1.])),
-                               solution[0], rtol=2e-2)
+                               solution[0], rtol=1e-2)
 
 
 @pytest.mark.slow
