@@ -11,7 +11,7 @@ import pytest
 from pybem import (
     complex_relative_error,
     Mesh,
-    calc_scattered_pressure_at,
+    calc_solution_at,
 )
 from pybem.helmholtz import (
     kirchhoff_helmholtz_solver,
@@ -82,7 +82,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     grad_p_incoming = np.array([[1j*k*amplitude*np.exp(1j*k*point[0]), 0]
                                for point in mesh.centers])
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
-    result = calc_scattered_pressure_at(mesh, admitant_2d_integral, k,
+    result = calc_solution_at(mesh, admitant_2d_integral, k,
                                         surface_pressure, mic_points, rho, c)
 
     # # plotting

@@ -1,7 +1,7 @@
 __version__ = '0.3.0'
 from .pybem import (
     complex_system_matrix,
-    calc_scattered_pressure_at,
+    calc_solution_at,
 )
 from .misc import (
     complex_relative_error,

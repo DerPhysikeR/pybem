@@ -16,7 +16,7 @@ def complex_system_matrix(mesh, matrix_element_function, k, *args, **kwargs):
     return system_matrix
 
 
-def calc_scattered_pressure_at(mesh, integral_function, k, surface_pressure,
+def calc_solution_at(mesh, integral_function, k, surface_pressure,
                                microphone_points, *args, **kwargs):
     assert len(mesh.elements) == len(surface_pressure)
     microphone_points = np.array(microphone_points, dtype=float)

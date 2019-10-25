@@ -5,7 +5,7 @@
 """
 import numpy as np
 import pytest
-from pybem import Mesh, calc_scattered_pressure_at
+from pybem import Mesh, calc_solution_at
 from pybem.helmholtz import (
     g_2d,
     admitant_2d_integral,
@@ -20,7 +20,7 @@ from pybem.helmholtz import (
     kirchhoff_helmholtz_solver,
     burton_miller_solver,
 ])
-def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
+def test_calc_solution_at_point_source_reflective_plane(solver):
     # actually solve the linear system for point source above reflective plane
     n = 80
     # create admitant mesh
@@ -32,7 +32,7 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
     grad_p_incoming = np.array([vector_h_2d(k, point, np.array([0., 1.]))
                                for point in mesh.centers], dtype=complex)
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
-    solution = calc_scattered_pressure_at(mesh, admitant_2d_integral, k,
+    solution = calc_solution_at(mesh, admitant_2d_integral, k,
                                           surface_pressure,
                                           np.array([[0., .5]]), rho, c)
     np.testing.assert_allclose(g_2d(k, np.array([0., .5]),
@@ -58,7 +58,7 @@ def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
                                 for point in mesh.centers],
                                dtype=complex)
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
-    solution = calc_scattered_pressure_at(mesh, admitant_2d_integral, k,
+    solution = calc_solution_at(mesh, admitant_2d_integral, k,
                                           surface_pressure,
                                           np.array([[0., .5]]), rho, c)
     np.testing.assert_allclose(0+1, solution[0]+1, rtol=1e-2)
