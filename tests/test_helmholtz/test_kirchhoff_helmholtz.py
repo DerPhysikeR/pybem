@@ -6,8 +6,8 @@
 import numpy as np
 from scipy.special import hankel2
 import pytest
-from pybem import (
-    Mesh,
+from pybem import Mesh
+from pybem.helmholtz.kirchhoff_helmholtz import (
     g_2d,
     hs_2d,
     vector_h_2d,

@@ -4,7 +4,7 @@
 @author: Paul Reiter
 """
 import numpy as np
-from pybem import (
+from pybem.integrals import (
     line_integral,
 )
 

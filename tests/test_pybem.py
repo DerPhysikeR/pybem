@@ -6,11 +6,13 @@
 import numpy as np
 import pytest
 from pybem import __version__
-from pybem import (
-    Mesh,
+from pybem import Mesh
+from pybem.pybem import (
     complex_system_matrix,
-    g_2d,
     calc_scattered_pressure_at,
+)
+from pybem.helmholtz import (
+    g_2d,
     admitant_2d_integral,
     kirchhoff_helmholtz_solver,
     burton_miller_solver,

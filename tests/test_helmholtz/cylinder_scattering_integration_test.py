@@ -11,9 +11,11 @@ import pytest
 from pybem import (
     complex_relative_error,
     Mesh,
+    calc_scattered_pressure_at,
+)
+from pybem.helmholtz import (
     kirchhoff_helmholtz_solver,
     burton_miller_solver,
-    calc_scattered_pressure_at,
     admitant_2d_integral,
 )
 

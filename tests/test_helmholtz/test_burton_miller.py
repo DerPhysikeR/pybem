@@ -7,9 +7,8 @@ import types
 import numpy as np
 from scipy.integrate import fixed_quad
 import pytest
-from pybem import (
-    complex_relative_error,
-    complex_quad,
+from pybem import complex_relative_error, complex_quad
+from pybem.helmholtz.burton_miller import (
     g_2d,
     h_2d,
     hs_2d,

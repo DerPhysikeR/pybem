@@ -5,7 +5,9 @@
 """
 import numpy as np
 import pytest
-from pybem import Mesh
+from pybem.mesh import (
+    Mesh,
+)
 
 
 @pytest.mark.parametrize('nodes, elements, corners', [
