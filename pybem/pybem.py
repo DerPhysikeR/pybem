@@ -4,10 +4,10 @@
 @author: Paul Reiter
 """
 import numpy as np
-from .integrals import (
-    admitant_2d_matrix_element,
+from .kirchhoff_helmholtz import admitant_2d_matrix_element
+from .burton_miller import (
     admitant_2d_matrix_element_bm,
-    burton_miller_rhs,
+    burton_miller_rhs
 )
 
 
