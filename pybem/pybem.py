@@ -29,7 +29,7 @@ def calc_scattered_pressure_at(mesh, integral_function, k, surface_pressure,
     return solution
 
 
-def simple_solver(mesh, p_incoming, grad_p_incoming, k, rho, c):
+def kirchhoff_helmholtz_solver(mesh, p_incoming, grad_p_incoming, k, rho, c):
     matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element, k,
                                       rho, c)
     return np.linalg.solve(matrix, p_incoming)

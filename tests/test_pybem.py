@@ -45,7 +45,7 @@ def test_calc_scattered_pressure_at():
 
 @pytest.mark.slow
 @pytest.mark.parametrize('solver', [
-    pb.simple_solver,
+    pb.kirchhoff_helmholtz_solver,
     pb.burton_miller_solver,
 ])
 def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
@@ -70,7 +70,7 @@ def test_calc_scattered_pressure_at_point_source_reflective_plane(solver):
 
 @pytest.mark.slow
 @pytest.mark.parametrize('solver', [
-    pb.simple_solver,
+    pb.kirchhoff_helmholtz_solver,
     pb.burton_miller_solver,
 ])
 def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):

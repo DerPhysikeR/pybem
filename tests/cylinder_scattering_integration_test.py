@@ -41,7 +41,7 @@ def complex_relative_error(reference, to_test):
 @pytest.mark.parametrize('ka', [.5, 2])
 @pytest.mark.parametrize('admittance', [0, 1/343])
 @pytest.mark.parametrize('solver', [
-    pb.simple_solver,
+    pb.kirchhoff_helmholtz_solver,
     pb.burton_miller_solver,
 ])
 @pytest.mark.slow
