@@ -6,6 +6,7 @@
 import numpy as np
 from scipy.integrate import fixed_quad
 from scipy.special import hankel2, struve
+from .pybem import complex_system_matrix
 from .integrals import line_integral
 from .kirchhoff_helmholtz import (
     g_2d,
@@ -75,3 +76,12 @@ def burton_miller_rhs(k, mesh, p_inc, grad_p_inc, coupling_sign=-1):
 def h_2d(n, k, r, rs):
     """Gradient of the 2D Green's function according to the obverver point r"""
     return -hs_2d(n, k, r, rs)
+
+
+def burton_miller_solver(mesh, p_incoming, grad_p_incoming, k, rho, c,
+                         coupling_sign=-1):
+    matrix = complex_system_matrix(mesh, admitant_2d_matrix_element_bm,
+                                   k, rho, c, coupling_sign)
+    rhs = burton_miller_rhs(k, mesh, p_incoming, grad_p_incoming,
+                            coupling_sign)
+    return np.linalg.solve(matrix, rhs)

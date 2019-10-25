@@ -5,6 +5,7 @@
 """
 import numpy as np
 from scipy.special import hankel2
+from .pybem import complex_system_matrix
 from .integrals import line_integral
 
 
@@ -47,3 +48,9 @@ def hs_2d(ns, k, r, rs):
 def g_2d(k, r, rs):
     """2D Green's function"""
     return 1j*hankel2(0, k*np.sqrt((r-rs).dot(r-rs)))/4
+
+
+def kirchhoff_helmholtz_solver(mesh, p_incoming, grad_p_incoming, k, rho, c):
+    matrix = complex_system_matrix(mesh, admitant_2d_matrix_element, k,
+                                   rho, c)
+    return np.linalg.solve(matrix, p_incoming)
