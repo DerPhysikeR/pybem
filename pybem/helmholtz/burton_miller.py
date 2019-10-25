@@ -6,8 +6,8 @@
 import numpy as np
 from scipy.integrate import fixed_quad
 from scipy.special import hankel2, struve
-from .pybem import complex_system_matrix
-from .integrals import line_integral
+from ..pybem import complex_system_matrix
+from ..integrals import line_integral
 from .kirchhoff_helmholtz import (
     g_2d,
     hs_2d,

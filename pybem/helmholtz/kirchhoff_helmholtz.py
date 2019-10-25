@@ -5,8 +5,8 @@
 """
 import numpy as np
 from scipy.special import hankel2
-from .pybem import complex_system_matrix
-from .integrals import line_integral
+from ..pybem import complex_system_matrix
+from ..integrals import line_integral
 
 
 def admitant_2d_integral(k, point, mesh, idx, rho, c):
