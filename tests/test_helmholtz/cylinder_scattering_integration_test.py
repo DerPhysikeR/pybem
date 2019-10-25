@@ -9,6 +9,7 @@ from scipy.special import hankel2, h2vp
 import pytest
 # import matplotlib.pyplot as plt
 from pybem import (
+    complex_relative_error,
     Mesh,
     kirchhoff_helmholtz_solver,
     burton_miller_solver,
@@ -37,11 +38,6 @@ def pressure_expansion(k, coefficients, radius, theta):
 def radial_velocity_expansion(k, coefficients, rho_c, radius, theta):
     return 1j*sum(coef * h2vp(n, k*radius) * np.cos(n*theta)
                   for coef, n in zip(coefficients, count()))/rho_c
-
-
-def complex_relative_error(reference, to_test):
-    reference, to_test = np.array(reference), np.array(to_test)
-    return np.max(np.abs((reference - to_test) / reference))
 
 
 @pytest.mark.parametrize('ka', [.5, 2])
