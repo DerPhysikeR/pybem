@@ -35,8 +35,10 @@ def simple_solver(mesh, p_incoming, grad_p_incoming, k, rho, c):
     return np.linalg.solve(matrix, p_incoming)
 
 
-def burton_miller_solver(mesh, p_incoming, grad_p_incoming, k, rho, c):
+def burton_miller_solver(mesh, p_incoming, grad_p_incoming, k, rho, c,
+                         coupling_sign=-1):
     matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element_bm,
-                                      k, rho, c)
-    rhs = pb.burton_miller_rhs(k, mesh, p_incoming, grad_p_incoming)
+                                      k, rho, c, coupling_sign)
+    rhs = pb.burton_miller_rhs(k, mesh, p_incoming, grad_p_incoming,
+                               coupling_sign)
     return np.linalg.solve(matrix, rhs)

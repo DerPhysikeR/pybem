@@ -66,7 +66,8 @@ def regularized_hypersingular_bm_part(v):
     )
 
 
-def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
+def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c,
+                                  coupling_sign):
     n, ns = mesh.normals[row_idx], mesh.normals[col_idx]
     r = mesh.centers[row_idx]
     corners, admittance = mesh.corners[col_idx], mesh.admittances[col_idx]
@@ -82,9 +83,9 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
                 + hankel2(0, lk2)*struve(-1, lk2)
                 + hankel2(1, lk2)*struve(0, lk2)
             )
-            + fixed_quad(regularized_hypersingular_bm_part, 0, lk2)[0]/2
-            - 2j/(np.pi*k*length)
-            + singular*(1 + z0*admittance)/2
+            - coupling_sign*fixed_quad(regularized_hypersingular_bm_part, 0, lk2)[0]/2
+            + coupling_sign*2j/(np.pi*k*length)
+            + singular*(1 - coupling_sign*z0*admittance)/2
         )
 
     else:
@@ -92,12 +93,12 @@ def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c):
             return (
                 hs_2d(ns, k, r, rs)
                 - 1j*k*z0*admittance*g_2d(k, r, rs)
-                - z0*admittance*h_2d(n, k, r, rs)
-                - 1j/k * hypersingular(k, r, rs, n, ns)
+                + coupling_sign*z0*admittance*h_2d(n, k, r, rs)
+                + coupling_sign*1j/k * hypersingular(k, r, rs, n, ns)
             )
 
         return (line_integral(integral_function, corners[0], corners[1], singular)
-                + singular*(1 + z0*admittance)/2)
+                + singular*(1 - coupling_sign*z0*admittance)/2)
 
 
 def hypersingular(k, r, rs, n, ns):
@@ -110,8 +111,11 @@ def hypersingular(k, r, rs, n, ns):
     )
 
 
-def burton_miller_rhs(k, mesh, p_inc, grad_p_inc):
-    return p_inc - (grad_p_inc * mesh.normals).sum(axis=1)*1j/k
+def burton_miller_rhs(k, mesh, p_inc, grad_p_inc, coupling_sign=-1):
+    return (
+        p_inc
+        + (coupling_sign*1j/k)*(grad_p_inc * mesh.normals).sum(axis=1)
+    )
 
 
 def vector_h_2d(k, r, rs):
