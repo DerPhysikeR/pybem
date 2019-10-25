@@ -4,7 +4,11 @@
 @author: Paul Reiter
 """
 import numpy as np
-import pybem as pb
+from .integrals import (
+    admitant_2d_matrix_element,
+    admitant_2d_matrix_element_bm,
+    burton_miller_rhs,
+)
 
 
 def complex_system_matrix(mesh, matrix_element_function, k, *args, **kwargs):
@@ -30,15 +34,15 @@ def calc_scattered_pressure_at(mesh, integral_function, k, surface_pressure,
 
 
 def kirchhoff_helmholtz_solver(mesh, p_incoming, grad_p_incoming, k, rho, c):
-    matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element, k,
-                                      rho, c)
+    matrix = complex_system_matrix(mesh, admitant_2d_matrix_element, k,
+                                   rho, c)
     return np.linalg.solve(matrix, p_incoming)
 
 
 def burton_miller_solver(mesh, p_incoming, grad_p_incoming, k, rho, c,
                          coupling_sign=-1):
-    matrix = pb.complex_system_matrix(mesh, pb.admitant_2d_matrix_element_bm,
-                                      k, rho, c, coupling_sign)
-    rhs = pb.burton_miller_rhs(k, mesh, p_incoming, grad_p_incoming,
-                               coupling_sign)
+    matrix = complex_system_matrix(mesh, admitant_2d_matrix_element_bm,
+                                   k, rho, c, coupling_sign)
+    rhs = burton_miller_rhs(k, mesh, p_incoming, grad_p_incoming,
+                            coupling_sign)
     return np.linalg.solve(matrix, rhs)

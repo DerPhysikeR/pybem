@@ -5,7 +5,7 @@
 """
 import numpy as np
 import pytest
-import pybem as pb
+from pybem import Mesh
 
 
 @pytest.mark.parametrize('nodes, elements, corners', [
@@ -13,7 +13,7 @@ import pybem as pb
      np.array([[[0, 0], [1, 0]], [[1, 0], [1, 1]]])),
 ])
 def test_mesh_corners(nodes, elements, corners):
-    np.testing.assert_allclose(corners, pb.Mesh(nodes, elements).corners)
+    np.testing.assert_allclose(corners, Mesh(nodes, elements).corners)
 
 
 @pytest.mark.parametrize('nodes, elements, center', [
@@ -21,14 +21,14 @@ def test_mesh_corners(nodes, elements, corners):
     ([[0, 1], [2, 3]], [[0, 1]], np.array([[1, 2]])),
 ])
 def test_mesh_centers(nodes, elements, center):
-    np.testing.assert_allclose(center, pb.Mesh(nodes, elements).centers)
+    np.testing.assert_allclose(center, Mesh(nodes, elements).centers)
 
 
 @pytest.mark.parametrize('nodes, elements, normals', [
     ([[0, 0], [2, 0], [2, 2]], [[0, 1], [1, 2]], np.array([[0, -1], [1, 0]])),
 ])
 def test_mesh_normals(nodes, elements, normals):
-    np.testing.assert_allclose(normals, pb.Mesh(nodes, elements).normals)
+    np.testing.assert_allclose(normals, Mesh(nodes, elements).normals)
 
 
 @pytest.mark.parametrize('nodes, elements, admittances, reference', [
@@ -36,8 +36,8 @@ def test_mesh_normals(nodes, elements, normals):
     ([[0, 0], [1, 0]], [[0, 1]], None, np.array([0], dtype=complex)),
 ])
 def test_mesh_admittances(nodes, elements, admittances, reference):
-    np.testing.assert_allclose(reference, pb.Mesh(nodes, elements,
-                                                  admittances).admittances)
+    np.testing.assert_allclose(reference, Mesh(nodes, elements,
+                                               admittances).admittances)
 
 
 @pytest.mark.parametrize('nodes, elements, admittances, reference', [
@@ -45,6 +45,6 @@ def test_mesh_admittances(nodes, elements, admittances, reference):
     ([[0, 0], [1, 0]], [[0, 1]], None, np.array([0], dtype=complex)),
 ])
 def test_mesh_set_admittances(nodes, elements, admittances, reference):
-    mesh = pb.Mesh(nodes, elements)
+    mesh = Mesh(nodes, elements)
     mesh.admittances = admittances
     np.testing.assert_allclose(reference, mesh.admittances)

@@ -8,7 +8,13 @@ import numpy as np
 from scipy.special import hankel2, h2vp
 import pytest
 # import matplotlib.pyplot as plt
-import pybem as pb
+from pybem import (
+    Mesh,
+    kirchhoff_helmholtz_solver,
+    burton_miller_solver,
+    calc_scattered_pressure_at,
+    admitant_2d_integral,
+)
 
 
 def calc_coefficiencts(k, radius, rho_c, amplitude, admittance, max_order):
@@ -41,8 +47,8 @@ def complex_relative_error(reference, to_test):
 @pytest.mark.parametrize('ka', [.5, 2])
 @pytest.mark.parametrize('admittance', [0, 1/343])
 @pytest.mark.parametrize('solver', [
-    pb.kirchhoff_helmholtz_solver,
-    pb.burton_miller_solver,
+    kirchhoff_helmholtz_solver,
+    burton_miller_solver,
 ])
 @pytest.mark.slow
 def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
@@ -59,7 +65,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     angles = np.arange(0, 2*np.pi, 2*np.pi/element_count)
     nodes = [(np.cos(angle), np.sin(angle)) for angle in angles]
     elements = [(i, i+1) for i in range(len(nodes)-1)] + [(len(nodes)-1, 0)]
-    mesh = pb.Mesh(nodes, elements, admittance*np.ones(len(elements)))
+    mesh = Mesh(nodes, elements, admittance*np.ones(len(elements)))
 
     # microphone points
     radius = 2
@@ -78,9 +84,8 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     grad_p_incoming = np.array([[1j*k*amplitude*np.exp(1j*k*point[0]), 0]
                                for point in mesh.centers])
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
-    result = pb.calc_scattered_pressure_at(mesh, pb.admitant_2d_integral, k,
-                                           surface_pressure, mic_points, rho,
-                                           c)
+    result = calc_scattered_pressure_at(mesh, admitant_2d_integral, k,
+                                        surface_pressure, mic_points, rho, c)
 
     # # plotting
     # fig = plt.figure()
