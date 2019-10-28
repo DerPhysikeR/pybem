@@ -51,6 +51,6 @@ def g_2d(k, r, rs):
     return 1j * hankel2(0, k * np.sqrt((r - rs).dot(r - rs))) / 4
 
 
-def kirchhoff_helmholtz_solver(mesh, p_incoming, grad_p_incoming, z0, k):
+def kirchhoff_helmholtz_solver(mesh, p_incoming, z0, k):
     matrix = complex_system_matrix(admitant_2d_matrix_element, mesh, z0, k)
     return np.linalg.solve(matrix, p_incoming)
