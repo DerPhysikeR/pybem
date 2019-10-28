@@ -96,9 +96,9 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     grad_p_incoming = np.array(
         [[1j * k * amplitude * np.exp(1j * k * point[0]), 0] for point in mesh.centers]
     )
-    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, z0)
+    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, z0, k)
     result = calc_solution_at(
-        admitant_2d_integral, mesh, surface_pressure, mic_points, k, z0
+        admitant_2d_integral, mesh, surface_pressure, mic_points, z0, k
     )
 
     # # plotting
