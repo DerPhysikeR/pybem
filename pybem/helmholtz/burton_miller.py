@@ -32,7 +32,7 @@ def admitant_2d_matrix_element_bm(mesh, row_idx, col_idx, z0, k, coupling_sign):
             * fixed_quad(regularized_hypersingular_bm_part, 0, lk2)[0]
             / 2
             + coupling_sign * 2j / (np.pi * k * length)
-            + singular * (1 - coupling_sign * z0 * admittance) / 2
+            + (1 - coupling_sign * z0 * admittance) / 2
         )
 
     else:
@@ -45,10 +45,7 @@ def admitant_2d_matrix_element_bm(mesh, row_idx, col_idx, z0, k, coupling_sign):
                 + coupling_sign * 1j / k * hypersingular(k, r, rs, n, ns)
             )
 
-        return (
-            line_integral(integral_function, corners[0], corners[1], singular)
-            + singular * (1 - coupling_sign * z0 * admittance) / 2
-        )
+        return line_integral(integral_function, corners[0], corners[1], singular)
 
 
 def hypersingular(k, r, rs, n, ns):
