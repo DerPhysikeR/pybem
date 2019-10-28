@@ -34,7 +34,7 @@ def test_calc_solution_at_point_source_reflective_plane(solver):
     )
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
     solution = calc_solution_at(
-        mesh, admitant_2d_integral, k, surface_pressure, np.array([[0.0, 0.5]]), rho, c
+        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, rho, c
     )
     np.testing.assert_allclose(
         g_2d(k, np.array([0.0, 0.5]), np.array([0.0, -1.0])), solution[0], rtol=1e-2
@@ -62,6 +62,6 @@ def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
     )
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
     solution = calc_solution_at(
-        mesh, admitant_2d_integral, k, surface_pressure, np.array([[0.0, 0.5]]), rho, c
+        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, rho, c
     )
     np.testing.assert_allclose(0 + 1, solution[0] + 1, rtol=1e-2)

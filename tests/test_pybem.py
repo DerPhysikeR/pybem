@@ -18,7 +18,7 @@ def test_complex_system_matrix():
     mesh = Mesh([[0, 0], [1, 0], [1, 2]], [[0, 1], [1, 2]])
 
     # def integral_function(k, r, admittance, n, corners, singular):
-    def integral_function(k, mesh, row_idx, col_idx):
+    def integral_function(mesh, row_idx, col_idx, k):
         return (
             mesh.centers[row_idx][0]
             + 1j * mesh.centers[row_idx][1]
@@ -26,7 +26,7 @@ def test_complex_system_matrix():
         )
 
     reference_system_matrix = np.array([[1.5, 0.5], [1 + 1j, 2 + 1j]], dtype=complex)
-    system_matrix = complex_system_matrix(mesh, integral_function, 1)
+    system_matrix = complex_system_matrix(integral_function, mesh, 1)
     np.testing.assert_allclose(reference_system_matrix, system_matrix)
 
 
@@ -41,7 +41,7 @@ def test_solution_at():
         [g_2d(k, point, np.array([0.0, 1.0])) for point in mesh.centers], dtype=complex
     )
     solution = calc_solution_at(
-        mesh, admitant_2d_integral, k, surface_pressure, np.array([[0.0, 0.5]]), rho, c
+        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, rho, c
     )
     np.testing.assert_allclose(
         g_2d(k, np.array([0.0, 0.5]), np.array([0.0, -1.0])), solution[0], rtol=1e-3

@@ -15,7 +15,7 @@ def regularized_hypersingular_bm_part(v):
     return hankel2(1, v) / v - 2j / (np.pi * v ** 2)  # regularization
 
 
-def admitant_2d_matrix_element_bm(k, mesh, row_idx, col_idx, rho, c, coupling_sign):
+def admitant_2d_matrix_element_bm(mesh, row_idx, col_idx, k, rho, c, coupling_sign):
     n, ns = mesh.normals[row_idx], mesh.normals[col_idx]
     r = mesh.centers[row_idx]
     corners, admittance = mesh.corners[col_idx], mesh.admittances[col_idx]
@@ -62,7 +62,7 @@ def hypersingular(k, r, rs, n, ns):
     )
 
 
-def burton_miller_rhs(k, mesh, p_inc, grad_p_inc, coupling_sign=-1):
+def burton_miller_rhs(mesh, p_inc, grad_p_inc, k, coupling_sign=-1):
     return p_inc + (coupling_sign * 1j / k) * (grad_p_inc * mesh.normals).sum(axis=1)
 
 
@@ -75,7 +75,7 @@ def burton_miller_solver(
     mesh, p_incoming, grad_p_incoming, k, rho, c, coupling_sign=-1
 ):
     matrix = complex_system_matrix(
-        mesh, admitant_2d_matrix_element_bm, k, rho, c, coupling_sign
+        admitant_2d_matrix_element_bm, mesh, k, rho, c, coupling_sign
     )
-    rhs = burton_miller_rhs(k, mesh, p_incoming, grad_p_incoming, coupling_sign)
+    rhs = burton_miller_rhs(mesh, p_incoming, grad_p_incoming, k, coupling_sign)
     return np.linalg.solve(matrix, rhs)

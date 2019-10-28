@@ -64,7 +64,7 @@ def test_burton_miller_rhs():
     mesh = types.SimpleNamespace()
     mesh.normals = np.array([[1, 0], [0, 1]])
     np.testing.assert_almost_equal(
-        burton_miller_rhs(k, mesh, p_inc, grad_p_inc), np.array([1 - 2j, 2 - 3j])
+        burton_miller_rhs(mesh, p_inc, grad_p_inc, k), np.array([1 - 2j, 2 - 3j])
     )
 
 

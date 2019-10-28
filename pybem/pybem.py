@@ -6,24 +6,22 @@
 import numpy as np
 
 
-def complex_system_matrix(mesh, matrix_element_function, k, *args, **kwargs):
+def complex_system_matrix(matrix_element_function, mesh, *args, **kwargs):
     dimension = len(mesh.elements)
     system_matrix = np.empty((dimension, dimension), dtype=complex)
     for i, row in enumerate(system_matrix):
         for j, col in enumerate(row):
-            system_matrix[i, j] = matrix_element_function(
-                k, mesh, i, j, *args, **kwargs
-            )
+            system_matrix[i, j] = matrix_element_function(mesh, i, j, *args, **kwargs)
     return system_matrix
 
 
 def calc_solution_at(
-    mesh, integral_function, k, surface_pressure, microphone_points, *args, **kwargs
+    integral_function, mesh, surface_solution, points_of_interest, *args, **kwargs
 ):
-    assert len(mesh.elements) == len(surface_pressure)
-    microphone_points = np.array(microphone_points, dtype=float)
-    solution = np.zeros(len(microphone_points), dtype=complex)
-    for i, point in enumerate(microphone_points):
-        for j, sp in enumerate(surface_pressure):
-            solution[i] += sp * integral_function(k, point, mesh, j, *args, **kwargs)
+    assert len(mesh.elements) == len(surface_solution)
+    points_of_interest = np.array(points_of_interest, dtype=float)
+    solution = np.zeros(len(points_of_interest), dtype=complex)
+    for i, point in enumerate(points_of_interest):
+        for j, sp in enumerate(surface_solution):
+            solution[i] += sp * integral_function(mesh, j, point, *args, **kwargs)
     return solution
