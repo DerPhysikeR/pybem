@@ -11,7 +11,7 @@ def test_line_integral():
     def square(coords):
         return coords.dot(coords)
 
-    result = line_integral(square, [0, 0], [3, 4], False)
+    result = line_integral(square, np.array([0, 0]), np.array([3, 4]), False)
     np.testing.assert_almost_equal(125 / 3, result)
 
 
@@ -19,5 +19,5 @@ def test_line_integral_singular():
     def singular_function(coords):
         return 1 / coords[0]
 
-    result = line_integral(singular_function, [-1, 0], [1, 0], True)
+    result = line_integral(singular_function, np.array([-1, 0]), np.array([1, 0]), True)
     np.testing.assert_almost_equal(0, result)
