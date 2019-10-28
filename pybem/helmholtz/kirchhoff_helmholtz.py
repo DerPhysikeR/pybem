@@ -15,10 +15,11 @@ def admitant_2d_integral(k, point, mesh, idx, rho, c):
     corners = mesh.corners[idx]
 
     def integral_function(rs):
-        return (- hs_2d(n, k, point, rs)
-                + 1j*k*c*rho*admittance*g_2d(k, point, rs))
+        return -hs_2d(n, k, point, rs) + 1j * k * c * rho * admittance * g_2d(
+            k, point, rs
+        )
 
-    return (line_integral(integral_function, corners[0], corners[1], False))
+    return line_integral(integral_function, corners[0], corners[1], False)
 
 
 def admitant_2d_matrix_element(k, mesh, row_idx, col_idx, rho, c):
@@ -27,17 +28,19 @@ def admitant_2d_matrix_element(k, mesh, row_idx, col_idx, rho, c):
     singular = row_idx == col_idx
 
     def integral_function(rs):
-        return hs_2d(ns, k, r, rs) - 1j*k*c*rho*admittance*g_2d(k, r, rs)
+        return hs_2d(ns, k, r, rs) - 1j * k * c * rho * admittance * g_2d(k, r, rs)
 
-    return (line_integral(integral_function, corners[0], corners[1], singular)
-            + singular/2)
+    return (
+        line_integral(integral_function, corners[0], corners[1], singular)
+        + singular / 2
+    )
 
 
 def vector_h_2d(k, r, rs):
     """Vectorial gradient of the 2D Green's function acoording to the obverver
        point r"""
-    distance = np.sqrt((r-rs).dot(r-rs))
-    return -1j*k*(r-rs)/(4*distance) * hankel2(1, k*distance)
+    distance = np.sqrt((r - rs).dot(r - rs))
+    return -1j * k * (r - rs) / (4 * distance) * hankel2(1, k * distance)
 
 
 def hs_2d(ns, k, r, rs):
@@ -47,10 +50,9 @@ def hs_2d(ns, k, r, rs):
 
 def g_2d(k, r, rs):
     """2D Green's function"""
-    return 1j*hankel2(0, k*np.sqrt((r-rs).dot(r-rs)))/4
+    return 1j * hankel2(0, k * np.sqrt((r - rs).dot(r - rs))) / 4
 
 
 def kirchhoff_helmholtz_solver(mesh, p_incoming, grad_p_incoming, k, rho, c):
-    matrix = complex_system_matrix(mesh, admitant_2d_matrix_element, k,
-                                   rho, c)
+    matrix = complex_system_matrix(mesh, admitant_2d_matrix_element, k, rho, c)
     return np.linalg.solve(matrix, p_incoming)

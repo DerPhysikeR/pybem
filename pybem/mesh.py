@@ -7,7 +7,6 @@ import numpy as np
 
 
 class Mesh:
-
     def __init__(self, nodes, elements, admittances=None):
         self._nodes = np.array(nodes, dtype=float)
         assert self._nodes.shape[1] == 2
@@ -52,8 +51,7 @@ class Mesh:
             self._admittances = admittances
 
     def _calc_corners(self):
-        corners = np.empty((*self._elements.shape, self._nodes.shape[1]),
-                           dtype=float)
+        corners = np.empty((*self._elements.shape, self._nodes.shape[1]), dtype=float)
         for i, corner_indexes in enumerate(self._elements):
             corners[i] = np.vstack([self._nodes[j] for j in corner_indexes])
         return corners
@@ -62,11 +60,11 @@ class Mesh:
         return self._corners.mean(axis=1)
 
     def _calc_normals(self):
-        normals = np.empty((self._elements.shape[0], self._nodes.shape[1]),
-                           dtype=float)
+        normals = np.empty((self._elements.shape[0], self._nodes.shape[1]), dtype=float)
         for i, corners in enumerate(self._corners):
             element_vector = corners[1] - corners[0]
             element_length = np.sqrt(element_vector.dot(element_vector))
-            normals[i] = element_vector.dot(
-                np.array([[0., -1.], [1., 0.]]))/element_length
+            normals[i] = (
+                element_vector.dot(np.array([[0.0, -1.0], [1.0, 0.0]])) / element_length
+            )
         return normals
