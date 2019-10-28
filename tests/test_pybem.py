@@ -36,12 +36,12 @@ def test_solution_at():
     mesh = Mesh(
         [(x, 0) for x in np.linspace(10, -10, n + 1)], [(i, i + 1) for i in range(n)]
     )
-    k, rho, c = 2 * np.pi * 300 / 343, 1, 343
+    k, z0 = 2 * np.pi * 300 / 343, 343
     surface_pressure = 2 * np.array(
         [g_2d(k, point, np.array([0.0, 1.0])) for point in mesh.centers], dtype=complex
     )
     solution = calc_solution_at(
-        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, rho, c
+        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, z0
     )
     np.testing.assert_allclose(
         g_2d(k, np.array([0.0, 0.5]), np.array([0.0, -1.0])), solution[0], rtol=1e-3

@@ -24,7 +24,7 @@ def test_calc_solution_at_point_source_reflective_plane(solver):
     mesh = Mesh(
         [(x, 0) for x in np.linspace(6, -6, n + 1)], [(i, i + 1) for i in range(n)]
     )
-    k, rho, c = 2 * np.pi * 300 / 343, 1, 343
+    k, z0 = 2 * np.pi * 300 / 343, 343
     p_incoming = np.array(
         [g_2d(k, point, np.array([0.0, 1.0])) for point in mesh.centers], dtype=complex
     )
@@ -32,9 +32,9 @@ def test_calc_solution_at_point_source_reflective_plane(solver):
         [vector_h_2d(k, point, np.array([0.0, 1.0])) for point in mesh.centers],
         dtype=complex,
     )
-    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
+    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, z0)
     solution = calc_solution_at(
-        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, rho, c
+        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, z0
     )
     np.testing.assert_allclose(
         g_2d(k, np.array([0.0, 0.5]), np.array([0.0, -1.0])), solution[0], rtol=1e-2
@@ -47,7 +47,7 @@ def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
     # plane wave impinging normally on admittance plane
     n = 180
     # create admitant mesh
-    k, rho, c = 2 * np.pi * 300 / 343, 1, 343
+    k, z0 = 2 * np.pi * 300 / 343, 343
     mesh = Mesh(
         [(x, 0) for x in np.linspace(9, -9, n + 1)],
         [(i, i + 1) for i in range(n)],
@@ -60,8 +60,8 @@ def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
         [[1j * k * np.exp(1j * k * point[1]), 0] for point in mesh.centers],
         dtype=complex,
     )
-    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
+    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, z0)
     solution = calc_solution_at(
-        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, rho, c
+        admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), k, z0
     )
     np.testing.assert_allclose(0 + 1, solution[0] + 1, rtol=1e-2)

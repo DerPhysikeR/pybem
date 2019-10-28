@@ -68,11 +68,11 @@ def test_vector_h_2d_is_gradient_of_g_2d():
 
 def test_admitant_2d_integral():
     mesh = Mesh(np.array([[0, 0], [1, 0]]), np.array([[0, 1]]))
-    result = admitant_2d_integral(mesh, 0, np.array([1, 0]), 1, 1, 1)
+    result = admitant_2d_integral(mesh, 0, np.array([1, 0]), 1, 1)
     assert isinstance(result, complex)
 
 
 def test_admitant_2d_integral_fully_reflective_single_plane():
     mesh = Mesh(np.array([[0, -0.5], [0, 0.5]]), np.array([[0, 1]]))
-    result = admitant_2d_integral(mesh, 0, np.array([0, 1]), 1, 1, 1)
+    result = admitant_2d_integral(mesh, 0, np.array([0, 1]), 1, 1)
     np.testing.assert_almost_equal(0, result)

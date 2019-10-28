@@ -17,22 +17,19 @@ from pybem.helmholtz import (
 )
 
 
-def calc_coefficiencts(k, radius, rho_c, amplitude, admittance, max_order):
+def calc_coefficiencts(k, radius, z0, amplitude, admittance, max_order):
     orders = np.arange(max_order + 1)
     thetas = np.pi * orders / len(orders)
     rhs = (
         amplitude
         * np.exp(1j * k * radius * np.cos(thetas))
-        * (np.cos(thetas) / rho_c - admittance)
+        * (np.cos(thetas) / z0 - admittance)
     )
     matrix = np.array(
         [
             [
                 np.cos(n * theta)
-                * (
-                    1j * h2vp(n, k * radius) / rho_c
-                    + admittance * hankel2(n, k * radius)
-                )
+                * (1j * h2vp(n, k * radius) / z0 + admittance * hankel2(n, k * radius))
                 for n in orders
             ]
             for theta in thetas
@@ -48,14 +45,14 @@ def pressure_expansion(k, coefficients, radius, theta):
     )
 
 
-def radial_velocity_expansion(k, coefficients, rho_c, radius, theta):
+def radial_velocity_expansion(k, coefficients, z0, radius, theta):
     return (
         1j
         * sum(
             coef * h2vp(n, k * radius) * np.cos(n * theta)
             for coef, n in zip(coefficients, count())
         )
-        / rho_c
+        / z0
     )
 
 
@@ -67,7 +64,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     # set constants
     k = ka  # for radius = 1
     amplitude = 1 + 1j
-    rho, c = 1, 343
+    z0 = 343
     element_size = 1 / k / 16
 
     # create mesh
@@ -87,7 +84,7 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     ]
 
     # reference caclculation
-    coefficients = calc_coefficiencts(k, 1, rho * c, amplitude, admittance, 100)
+    coefficients = calc_coefficiencts(k, 1, z0, amplitude, admittance, 100)
     reference_result = [
         pressure_expansion(k, coefficients, radius, theta) for theta in mic_angles
     ]
@@ -99,9 +96,9 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
     grad_p_incoming = np.array(
         [[1j * k * amplitude * np.exp(1j * k * point[0]), 0] for point in mesh.centers]
     )
-    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, rho, c)
+    surface_pressure = solver(mesh, p_incoming, grad_p_incoming, k, z0)
     result = calc_solution_at(
-        admitant_2d_integral, mesh, surface_pressure, mic_points, k, rho, c
+        admitant_2d_integral, mesh, surface_pressure, mic_points, k, z0
     )
 
     # # plotting
