@@ -6,9 +6,25 @@
 import numpy as np
 from scipy.integrate import fixed_quad
 from scipy.special import hankel2, struve
-from ..pybem import complex_system_matrix
-from ..integrals import line_integral
-from .kirchhoff_helmholtz import g_2d, hs_2d
+
+
+def complex_system_matrix(matrix_element_function, mesh, *args, **kwargs):
+    dimension = len(mesh.elements)
+    system_matrix = np.empty((dimension, dimension), dtype=complex)
+    for i, row in enumerate(system_matrix):
+        for j, col in enumerate(row):
+            system_matrix[i, j] = matrix_element_function(mesh, i, j, *args, **kwargs)
+    return system_matrix
+
+
+def line_integral(function, p0, p1):
+    line_vector = p1 - p0
+    length = np.sqrt(line_vector.dot(line_vector))
+
+    def to_quad(t):
+        return function((p1 + p0) / 2 + t * (p1 - p0) / 2)
+
+    return length * fixed_quad(np.vectorize(to_quad), -1.0, 1.0)[0] / 2
 
 
 def regularized_hypersingular_bm_part(v):
@@ -45,7 +61,7 @@ def admitant_2d_matrix_element_bm(mesh, row_idx, col_idx, z0, k, coupling_sign):
                 + coupling_sign * 1j / k * hypersingular(k, r, rs, n, ns)
             )
 
-        return line_integral(integral_function, corners[0], corners[1], singular)
+        return line_integral(integral_function, corners[0], corners[1])
 
 
 def hypersingular(k, r, rs, n, ns):
@@ -65,6 +81,23 @@ def burton_miller_rhs(mesh, p_inc, grad_p_inc, k, coupling_sign=-1):
 def h_2d(n, k, r, rs):
     """Gradient of the 2D Green's function according to the obverver point r"""
     return -hs_2d(n, k, r, rs)
+
+
+def vector_h_2d(k, r, rs):
+    """Vectorial gradient of the 2D Green's function acoording to the obverver
+       point r"""
+    distance = np.sqrt((r - rs).dot(r - rs))
+    return -1j * k * (r - rs) / (4 * distance) * hankel2(1, k * distance)
+
+
+def hs_2d(ns, k, r, rs):
+    """Gradient of the 2D Green's function according to the source point rs"""
+    return -ns.dot(vector_h_2d(k, r, rs))
+
+
+def g_2d(k, r, rs):
+    """2D Green's function"""
+    return 1j * hankel2(0, k * np.sqrt((r - rs).dot(r - rs))) / 4
 
 
 def fast_burton_miller_solver(mesh, p_incoming, grad_p_incoming, z0, k, coupling_sign=-1):
