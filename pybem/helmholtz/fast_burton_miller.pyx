@@ -25,8 +25,14 @@ def complex_system_matrix(mesh, *args, **kwargs):
         mesh.centers,
         mesh.corners,
         mesh.admittances,
-        *args,
-        **kwargs
+        args[0],
+        args[1],
+        args[2],
+        weights,
+        abscissa,
+        len(weights),
+        # *args,
+        # **kwargs
     )
     return system_matrix
 
@@ -53,24 +59,46 @@ def main_diagonal(mesh, idx, z0, k, coupling_sign):
     )
 
 
-def rest_of_the_matrix(
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef void rest_of_the_matrix(
     complex[:, :] matrix,
     int shape,
     double[:, :] mesh_normals,
     double[:, :] mesh_centers,
-    # double[:, :, :] mesh_corners,
-    mesh_corners,
+    double[:, :, :] mesh_corners,
     complex[:] mesh_admittances,
     double z0,
     double k,
     int coupling_sign,
+    double[:] weights,
+    double[:] abscissa,
+    int n_weights,
 ):
+
+    cdef:
+        double nx
+        double ny
+        double nsx
+        double nsy
+        double rx
+        double ry
+        double complex admittance
+        double p0x
+        double p0y
+        double p1x
+        double p1y
+        double length
+        double complex result
+        double rsx
+        double rsy
+
     for row_idx in range(shape):
         for col_idx in range(shape):
             if row_idx == col_idx:
                 continue
 
-            # nx, ny = mesh_normals[row_idx, 0], mesh_normals[row_idx, 1]
             nx = mesh_normals[row_idx, 0]
             ny = mesh_normals[row_idx, 1]
             nsx = mesh_normals[col_idx, 0]
@@ -83,15 +111,11 @@ def rest_of_the_matrix(
             p0y = mesh_corners[col_idx, 0, 1]
             p1x = mesh_corners[col_idx, 1, 0]
             p1y = mesh_corners[col_idx, 1, 1]
-            length = np.sqrt((p1x - p0x)**2 + (p1y - p0y)**2)
-            # corners = mesh_corners[col_idx]
-            # element_vector = corners[1] - corners[0]
-            # length = np.sqrt(element_vector.dot(element_vector))
+            length = sqrt((p1x - p0x)*(p1x - p0x) + (p1y - p0y)*(p1y - p0y))
 
-            # lk2 = length * k / 2
-
+            # perform integration
             result = 0
-            for i in range(5):
+            for i in range(n_weights):
                 rsx = (p1x + p0x) / 2 + abscissa[i] * (p1x - p0x) / 2
                 rsy = (p1y + p0y) / 2 + abscissa[i] * (p1y - p0y) / 2
                 result = result + weights[i] * rest_integral_function(rx, ry, nx, ny, admittance, k, z0, coupling_sign, rsx, rsy, nsx, nsy)
