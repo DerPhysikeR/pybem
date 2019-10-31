@@ -30,6 +30,20 @@ def complex_system_matrix(mesh, *args, **kwargs):
     return system_matrix
 
 
+w1, w2, w3, w4, w5 = 0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891
+x1, x2, x3, x4, x5 = (0.0000000000000000), (-0.5384693101056831), (0.5384693101056831), (-0.9061798459386640), (0.9061798459386640)
+
+
+def fifth_quad(f1, f2, f3, f4, f5):
+    return (
+        + w1 * f1
+        + w2 * f2
+        + w3 * f3
+        + w4 * f4
+        + w5 * f5
+    )
+
+
 def line_integral(function, p0, p1):
     line_vector = p1 - p0
     length = np.sqrt(line_vector.dot(line_vector))
@@ -37,7 +51,13 @@ def line_integral(function, p0, p1):
     def to_quad(t):
         return function((p1 + p0) / 2 + t * (p1 - p0) / 2)
 
-    return length * fixed_quad(np.vectorize(to_quad), -1.0, 1.0)[0] / 2
+    return length * fifth_quad(
+        to_quad(x1),
+        to_quad(x2),
+        to_quad(x3),
+        to_quad(x4),
+        to_quad(x5),
+    ) / 2
 
 
 def regularized_hypersingular_bm_part(v):
