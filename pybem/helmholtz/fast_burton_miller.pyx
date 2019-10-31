@@ -8,6 +8,7 @@ from scipy.integrate import fixed_quad
 from scipy.special import hankel2, struve
 import cython
 cimport scipy.special.cython_special as cs
+from libc.math cimport sqrt
 # hankel2 = cs.hankel2
 # struve = cs.struve
 
@@ -30,34 +31,8 @@ def complex_system_matrix(mesh, *args, **kwargs):
     return system_matrix
 
 
-w1, w2, w3, w4, w5 = 0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891
-x1, x2, x3, x4, x5 = (0.0000000000000000), (-0.5384693101056831), (0.5384693101056831), (-0.9061798459386640), (0.9061798459386640)
-
-
-def fifth_quad(f1, f2, f3, f4, f5):
-    return (
-        + w1 * f1
-        + w2 * f2
-        + w3 * f3
-        + w4 * f4
-        + w5 * f5
-    )
-
-
-def line_integral(function, p0, p1):
-    line_vector = p1 - p0
-    length = np.sqrt(line_vector.dot(line_vector))
-
-    def to_quad(t):
-        return function((p1 + p0) / 2 + t * (p1 - p0) / 2)
-
-    return length * fifth_quad(
-        to_quad(x1),
-        to_quad(x2),
-        to_quad(x3),
-        to_quad(x4),
-        to_quad(x5),
-    ) / 2
+weights = np.array([0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891])
+abscissa = np.array([0.0000000000000000, -0.5384693101056831, 0.5384693101056831, -0.9061798459386640, 0.9061798459386640])
 
 
 def regularized_hypersingular_bm_part(v):
@@ -104,45 +79,63 @@ def rest_of_the_matrix(
             ry = mesh_centers[row_idx, 1]
             admittance = mesh_admittances[col_idx]
 
-            # length = np.sqrt(
-            #     + (mesh_corners[col_idx, 1, 0] - mesh_corners[col_idx, 0, 0])**2
-            #     + (mesh_corners[col_idx, 1, 1] - mesh_corners[col_idx, 0, 1])**2
-            # )
-            corners = mesh_corners[col_idx]
+            p0x = mesh_corners[col_idx, 0, 0]
+            p0y = mesh_corners[col_idx, 0, 1]
+            p1x = mesh_corners[col_idx, 1, 0]
+            p1y = mesh_corners[col_idx, 1, 1]
+            length = np.sqrt((p1x - p0x)**2 + (p1y - p0y)**2)
+            # corners = mesh_corners[col_idx]
             # element_vector = corners[1] - corners[0]
             # length = np.sqrt(element_vector.dot(element_vector))
 
             # lk2 = length * k / 2
 
-            @cython.cdivision(True)
-            def integral_function(double[:] rs):
-                cdef double complex adm = admittance
-                cdef double vectorx = rx - rs[0]
-                cdef double vectory = ry - rs[1]
-                cdef double distance = np.sqrt(vectorx**2 + vectory**2)
+            result = 0
+            for i in range(5):
+                rsx = (p1x + p0x) / 2 + abscissa[i] * (p1x - p0x) / 2
+                rsy = (p1y + p0y) / 2 + abscissa[i] * (p1y - p0y) / 2
+                result = result + weights[i] * rest_integral_function(rx, ry, nx, ny, admittance, k, z0, coupling_sign, rsx, rsy, nsx, nsy)
 
-                cdef double ndv = nx * vectorx + ny * vectory
-                cdef double nsdv = nsx * vectorx + nsy * vectory
-                cdef double ndns = nx * nsx + ny * nsy
+            matrix[row_idx, col_idx] = .5 * length * result
 
-                cdef double kdist = k * distance
-                cdef double complex h20 = cs.hankel2(0, kdist)
-                cdef double complex h21 = cs.hankel2(1, kdist)
-                cdef double complex h22 = cs.hankel2(2, kdist)
-                cdef double complex result = (
-                    + .25 * k * z0 * adm * h20
-                    - coupling_sign * (
-                        + 1j * k * nsdv * h21
-                        + ndns * h21
-                        + z0 * adm * 1j * k * ndv * h21
-                        - k * ndv * nsdv * h22 / distance
-                     ) / (4. * distance)
-                )
-                return result
 
-            matrix[row_idx, col_idx] = line_integral(
-                integral_function, corners[0], corners[1]
-            )
+@cython.cdivision(True)
+cdef double complex rest_integral_function(
+    double rx,
+    double ry,
+    double nx,
+    double ny,
+    double complex adm,
+    double k,
+    double z0,
+    int coupling_sign,
+    double rsx,
+    double rsy,
+    double nsx,
+    double nsy,
+):
+    cdef double vectorx = rx - rsx
+    cdef double vectory = ry - rsy
+    cdef double distance = sqrt(vectorx**2 + vectory**2)
+
+    cdef double ndv = nx * vectorx + ny * vectory
+    cdef double nsdv = nsx * vectorx + nsy * vectory
+    cdef double ndns = nx * nsx + ny * nsy
+
+    cdef double kdist = k * distance
+    cdef double complex h20 = cs.hankel2(0, kdist)
+    cdef double complex h21 = cs.hankel2(1, kdist)
+    cdef double complex h22 = cs.hankel2(2, kdist)
+    cdef double complex result = (
+        + .25 * k * z0 * adm * h20
+        - coupling_sign * (
+            + 1j * k * nsdv * h21
+            + ndns * h21
+            + z0 * adm * 1j * k * ndv * h21
+            - k * ndv * nsdv * h22 / distance
+            ) / (4. * distance)
+    )
+    return result
 
 
 def burton_miller_rhs(mesh, p_inc, grad_p_inc, k, coupling_sign=-1):
