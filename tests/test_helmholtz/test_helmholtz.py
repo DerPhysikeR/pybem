@@ -12,6 +12,7 @@ from pybem.helmholtz import (
     kirchhoff_helmholtz_solver,
     burton_miller_solver,
     vector_h_2d,
+    fast_burton_miller_solver,
 )
 
 
@@ -22,7 +23,12 @@ def wrapped_kirchhoff_helmholtz_solver(mesh, p_incoming, _, z0, k):
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "solver", [wrapped_kirchhoff_helmholtz_solver, burton_miller_solver]
+    "solver",
+    [
+        wrapped_kirchhoff_helmholtz_solver,
+        burton_miller_solver,
+        fast_burton_miller_solver,
+    ],
 )
 def test_calc_solution_at_point_source_reflective_plane(solver):
     # actually solve the linear system for point source above reflective plane
@@ -50,7 +56,12 @@ def test_calc_solution_at_point_source_reflective_plane(solver):
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "solver", [wrapped_kirchhoff_helmholtz_solver, burton_miller_solver]
+    "solver",
+    [
+        wrapped_kirchhoff_helmholtz_solver,
+        burton_miller_solver,
+        fast_burton_miller_solver,
+    ],
 )
 def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
     # plane wave impinging normally on admittance plane

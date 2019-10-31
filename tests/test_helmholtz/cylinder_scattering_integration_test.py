@@ -14,6 +14,7 @@ from pybem.helmholtz import (
     kirchhoff_helmholtz_solver,
     burton_miller_solver,
     admitant_2d_integral,
+    fast_burton_miller_solver,
 )
 from .test_helmholtz import wrapped_kirchhoff_helmholtz_solver
 
@@ -60,7 +61,12 @@ def radial_velocity_expansion(k, coefficients, z0, radius, theta):
 @pytest.mark.parametrize("ka", [0.5, 2])
 @pytest.mark.parametrize("admittance", [0, 1 / 343])
 @pytest.mark.parametrize(
-    "solver", [wrapped_kirchhoff_helmholtz_solver, burton_miller_solver]
+    "solver",
+    [
+        wrapped_kirchhoff_helmholtz_solver,
+        burton_miller_solver,
+        fast_burton_miller_solver,
+    ],
 )
 @pytest.mark.slow
 def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
