@@ -6,6 +6,10 @@
 import numpy as np
 from scipy.integrate import fixed_quad
 from scipy.special import hankel2, struve
+import cython
+cimport scipy.special.cython_special as cs
+# hankel2 = cs.hankel2
+# struve = cs.struve
 
 
 def complex_system_matrix(mesh, *args, **kwargs):
@@ -15,6 +19,7 @@ def complex_system_matrix(mesh, *args, **kwargs):
         system_matrix[i, i] = main_diagonal(mesh, i, *args, **kwargs)
     rest_of_the_matrix(
         system_matrix,
+        system_matrix.shape[0],
         mesh.normals,
         mesh.centers,
         mesh.corners,
@@ -54,44 +59,66 @@ def main_diagonal(mesh, idx, z0, k, coupling_sign):
 
 
 def rest_of_the_matrix(
-    matrix,
-    mesh_normals,
-    mesh_centers,
+    complex[:, :] matrix,
+    int shape,
+    double[:, :] mesh_normals,
+    double[:, :] mesh_centers,
+    # double[:, :, :] mesh_corners,
     mesh_corners,
-    mesh_admittances,
-    z0,
-    k,
-    coupling_sign,
+    complex[:] mesh_admittances,
+    double z0,
+    double k,
+    int coupling_sign,
 ):
-    nrows, ncols = matrix.shape
-    for row_idx in range(nrows):
-        for col_idx in range(ncols):
+    for row_idx in range(shape):
+        for col_idx in range(shape):
             if row_idx == col_idx:
                 continue
 
-            n, ns = mesh_normals[row_idx], mesh_normals[col_idx]
-            r = mesh_centers[row_idx]
-            corners, admittance = mesh_corners[col_idx], mesh_admittances[col_idx]
+            # nx, ny = mesh_normals[row_idx, 0], mesh_normals[row_idx, 1]
+            nx = mesh_normals[row_idx, 0]
+            ny = mesh_normals[row_idx, 1]
+            nsx = mesh_normals[col_idx, 0]
+            nsy = mesh_normals[col_idx, 1]
+            rx = mesh_centers[row_idx, 0]
+            ry = mesh_centers[row_idx, 1]
+            admittance = mesh_admittances[col_idx]
 
-            element_vector = corners[1] - corners[0]
-            length = np.sqrt(element_vector.dot(element_vector))
-            lk2 = length * k / 2
+            # length = np.sqrt(
+            #     + (mesh_corners[col_idx, 1, 0] - mesh_corners[col_idx, 0, 0])**2
+            #     + (mesh_corners[col_idx, 1, 1] - mesh_corners[col_idx, 0, 1])**2
+            # )
+            corners = mesh_corners[col_idx]
+            # element_vector = corners[1] - corners[0]
+            # length = np.sqrt(element_vector.dot(element_vector))
 
-            def integral_function(rs):
-                vector = r - rs
-                distance = np.sqrt(vector.dot(vector))
-                kdist = k * distance
-                h20, h21, h22 = hankel2(0, kdist), hankel2(1, kdist), hankel2(2, kdist)
-                ndv, nsdv, ndns = n.dot(vector), ns.dot(vector), n.dot(ns)
-                return (
-                    + k * z0 * admittance * h20 / 4
+            # lk2 = length * k / 2
+
+            @cython.cdivision(True)
+            def integral_function(double[:] rs):
+                cdef double complex adm = admittance
+                cdef double vectorx = rx - rs[0]
+                cdef double vectory = ry - rs[1]
+                cdef double distance = np.sqrt(vectorx**2 + vectory**2)
+
+                cdef double ndv = nx * vectorx + ny * vectory
+                cdef double nsdv = nsx * vectorx + nsy * vectory
+                cdef double ndns = nx * nsx + ny * nsy
+
+                cdef double kdist = k * distance
+                cdef double complex h20 = cs.hankel2(0, kdist)
+                cdef double complex h21 = cs.hankel2(1, kdist)
+                cdef double complex h22 = cs.hankel2(2, kdist)
+                cdef double complex result = (
+                    + .25 * k * z0 * adm * h20
                     - coupling_sign * (
                         + 1j * k * nsdv * h21
                         + ndns * h21
-                        + z0 * admittance * 1j * k * ndv * h21
+                        + z0 * adm * 1j * k * ndv * h21
                         - k * ndv * nsdv * h22 / distance
-                     ) / (4 * distance)
+                     ) / (4. * distance)
                 )
+                return result
 
             matrix[row_idx, col_idx] = line_integral(
                 integral_function, corners[0], corners[1]
