@@ -13,3 +13,8 @@ from .burton_miller import (
     burton_miller_rhs,
     burton_miller_solver,
 )
+
+import pyximport
+
+pyximport.install(language_level=3)
+from .fast_burton_miller import fast_burton_miller_solver
