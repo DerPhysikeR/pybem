@@ -63,8 +63,9 @@ def rest_of_the_matrix(
     k,
     coupling_sign,
 ):
-    for row_idx, row in enumerate(matrix):
-        for col_idx, col in enumerate(row):
+    nrows, ncols = matrix.shape
+    for row_idx in range(nrows):
+        for col_idx in range(ncols):
             if row_idx == col_idx:
                 continue
 
@@ -77,11 +78,19 @@ def rest_of_the_matrix(
             lk2 = length * k / 2
 
             def integral_function(rs):
+                vector = r - rs
+                distance = np.sqrt(vector.dot(vector))
+                kdist = k * distance
+                h20, h21, h22 = hankel2(0, kdist), hankel2(1, kdist), hankel2(2, kdist)
+                ndv, nsdv, ndns = n.dot(vector), ns.dot(vector), n.dot(ns)
                 return (
-                    hs_2d(ns, k, r, rs)
-                    - 1j * k * z0 * admittance * g_2d(k, r, rs)
-                    + coupling_sign * z0 * admittance * h_2d(n, k, r, rs)
-                    + coupling_sign * 1j / k * hypersingular(k, r, rs, n, ns)
+                    + k * z0 * admittance * h20 / 4
+                    - coupling_sign * (
+                        + 1j * k * nsdv * h21
+                        + ndns * h21
+                        + z0 * admittance * 1j * k * ndv * h21
+                        - k * ndv * nsdv * h22 / distance
+                     ) / (4 * distance)
                 )
 
             matrix[row_idx, col_idx] = line_integral(
