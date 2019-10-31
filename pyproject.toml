@@ -8,6 +8,7 @@ authors = ["Paul Reiter <reiter.paul@gmail.com>"]
 python = "^3.7"
 numpy = "^1.16"
 scipy = "^1.2"
+cython = "^0.29.13"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
