@@ -145,40 +145,8 @@ def rest_of_the_matrix(
             )
 
 
-def hypersingular(k, r, rs, n, ns):
-    vector = r - rs
-    distance = np.sqrt(vector.dot(vector))
-    kdist = k * distance
-    return (1j * k / (4 * distance ** 2)) * (
-        distance * hankel2(1, kdist) * n.dot(ns)
-        - k * hankel2(2, kdist) * n.dot(vector) * ns.dot(vector)
-    )
-
-
 def burton_miller_rhs(mesh, p_inc, grad_p_inc, k, coupling_sign=-1):
     return p_inc + (coupling_sign * 1j / k) * (grad_p_inc * mesh.normals).sum(axis=1)
-
-
-def h_2d(n, k, r, rs):
-    """Gradient of the 2D Green's function according to the obverver point r"""
-    return -hs_2d(n, k, r, rs)
-
-
-def vector_h_2d(k, r, rs):
-    """Vectorial gradient of the 2D Green's function acoording to the obverver
-       point r"""
-    distance = np.sqrt((r - rs).dot(r - rs))
-    return -1j * k * (r - rs) / (4 * distance) * hankel2(1, k * distance)
-
-
-def hs_2d(ns, k, r, rs):
-    """Gradient of the 2D Green's function according to the source point rs"""
-    return -ns.dot(vector_h_2d(k, r, rs))
-
-
-def g_2d(k, r, rs):
-    """2D Green's function"""
-    return 1j * hankel2(0, k * np.sqrt((r - rs).dot(r - rs))) / 4
 
 
 def fast_burton_miller_solver(
