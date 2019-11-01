@@ -14,8 +14,6 @@ from pybem.helmholtz import (
     fast_burton_miller_solver,
 )
 
-# import matplotlib.pyplot as plt
-
 
 @pytest.mark.parametrize("ka", [0.5, 2])
 @pytest.mark.parametrize("admittance", [0, 1 / 343])
@@ -28,7 +26,9 @@ from pybem.helmholtz import (
     ],
 )
 @pytest.mark.slow
-def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
+def test_plane_wave_admittance_cylinder_scattering(
+    ka, admittance, solver, tmpdir, request
+):
     # set constants
     k = ka  # for radius = 1
     amplitude = 1 + 1j
@@ -69,29 +69,31 @@ def test_plane_wave_admittance_cylinder_scattering(ka, admittance, solver):
         admitant_2d_integral, mesh, surface_pressure, mic_points, z0, k
     )
 
-    # # plotting
-    # fig = plt.figure()
-    # ax = fig.add_subplot(1, 1, 1, projection='polar')
+    # plotting
+    if request.config.getoption("--plot"):
+        import matplotlib.pyplot as plt
 
-    # # real and imaginary parts of the solution
-    # ax.plot([np.arctan2(point[1], point[0]) for point in mic_points],
-    #         (np.real(result)))
-    # ax.plot([np.arctan2(point[1], point[0]) for point in mic_points],
-    #         (np.imag(result)))
-    # ax.plot([np.arctan2(point[1], point[0]) for point in mic_points],
-    #         (np.real(reference_result)))
-    # ax.plot([np.arctan2(point[1], point[0]) for point in mic_points],
-    #         (np.imag(reference_result)))
-    # ax.legend(['BEM Re', 'BEM Im', 'Expansion Re', 'Expansion Im'])
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1, projection="polar")
 
-    # # # absolute value of solution
-    # # ax.plot([np.arctan2(point[1], point[0]) for point in mic_points],
-    # #         (np.abs(result)))
-    # # ax.plot([np.arctan2(point[1], point[0]) for point in mic_points],
-    # #         (np.abs(reference_result)))
-    # # ax.legend(['BEM Abs', 'Expansion Abs'])
+        for result in [result, reference_result]:
+            for part in [np.abs, np.real, np.imag]:
+                ax.plot(
+                    [np.arctan2(point[1], point[0]) for point in mic_points],
+                    (part(result)),
+                )
+        ax.legend(
+            [
+                "BEM Abs",
+                "BEM Re",
+                "BEM Im",
+                "Expansion Abs",
+                "Expansion Re",
+                "Expansion Im",
+            ]
+        )
 
-    # fig.savefig('surface_pressure_distribution.pdf')
-    # plt.close(fig)
+        fig.savefig(tmpdir / (request.node.name + ".pdf"))
+        plt.close(fig)
 
     assert complex_relative_error(reference_result, result) < 1e-2
