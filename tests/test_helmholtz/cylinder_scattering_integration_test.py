@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from .cylinder_scattering import calc_coefficiencts, pressure_expansion
 from pybem import complex_relative_error, Mesh, calc_solution_at
-from .integration_tests import wrapped_kirchhoff_helmholtz_solver
+from .integration_test import wrapped_kirchhoff_helmholtz_solver
 from pybem.helmholtz import (
     burton_miller_solver,
     admitant_2d_integral,
