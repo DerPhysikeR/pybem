@@ -4,13 +4,24 @@
 @author: Paul Reiter
 """
 import numpy as np
+import cython
 from scipy.integrate import fixed_quad
 from scipy.special import hankel2, struve
-import cython
-cimport scipy.special.cython_special as cs
+from scipy.special.cython_special cimport hankel2 as chankel2
 from libc.math cimport sqrt
-# hankel2 = cs.hankel2
-# struve = cs.struve
+from .burton_miller import burton_miller_rhs, regularized_hypersingular_bm_part
+
+
+WEIGHTS = np.array([0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891])
+ABSCISSA = np.array([0.0000000000000000, -0.5384693101056831, 0.5384693101056831, -0.9061798459386640, 0.9061798459386640])
+
+
+def fast_burton_miller_solver(
+    mesh, p_incoming, grad_p_incoming, z0, k, coupling_sign=-1
+):
+    matrix = complex_system_matrix(mesh, z0, k, coupling_sign)
+    rhs = burton_miller_rhs(mesh, p_incoming, grad_p_incoming, k, coupling_sign)
+    return np.linalg.solve(matrix, rhs)
 
 
 def complex_system_matrix(mesh, *args, **kwargs):
@@ -28,19 +39,11 @@ def complex_system_matrix(mesh, *args, **kwargs):
         args[0],
         args[1],
         args[2],
-        weights,
-        abscissa,
-        len(weights),
+        WEIGHTS,
+        ABSCISSA,
+        len(WEIGHTS),
     )
     return system_matrix
-
-
-weights = np.array([0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891])
-abscissa = np.array([0.0000000000000000, -0.5384693101056831, 0.5384693101056831, -0.9061798459386640, 0.9061798459386640])
-
-
-def regularized_hypersingular_bm_part(v):
-    return hankel2(1, v) / v - 2j / (np.pi * v ** 2)  # regularization
 
 
 def main_diagonal(mesh, idx, z0, k, coupling_sign):
@@ -135,9 +138,9 @@ cdef double complex rest_integral_function(
         double nsdv = inner_product(ns, difference)
         double ndns = inner_product(n, ns)
         double kdist = k * distance
-        double complex h20 = cs.hankel2(0, kdist)
-        double complex h21 = cs.hankel2(1, kdist)
-        double complex h22 = cs.hankel2(2, kdist)
+        double complex h20 = chankel2(0, kdist)
+        double complex h21 = chankel2(1, kdist)
+        double complex h22 = chankel2(2, kdist)
         double complex result = (
             + .25 * k * z0 * adm * h20
             - coupling_sign * (
@@ -148,15 +151,3 @@ cdef double complex rest_integral_function(
                 ) / (4. * distance)
         )
     return result
-
-
-def burton_miller_rhs(mesh, p_inc, grad_p_inc, k, coupling_sign=-1):
-    return p_inc + (coupling_sign * 1j / k) * (grad_p_inc * mesh.normals).sum(axis=1)
-
-
-def fast_burton_miller_solver(
-    mesh, p_incoming, grad_p_incoming, z0, k, coupling_sign=-1
-):
-    matrix = complex_system_matrix(mesh, z0, k, coupling_sign)
-    rhs = burton_miller_rhs(mesh, p_incoming, grad_p_incoming, k, coupling_sign)
-    return np.linalg.solve(matrix, rhs)

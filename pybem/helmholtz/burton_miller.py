@@ -8,7 +8,7 @@ from scipy.integrate import fixed_quad
 from scipy.special import hankel2, struve
 from ..pybem import complex_system_matrix
 from ..integrals import line_integral
-from .kirchhoff_helmholtz import g_2d, hs_2d
+from .helmholtz import g_2d, h_2d, hs_2d, hypersingular
 
 
 def regularized_hypersingular_bm_part(v):
@@ -48,23 +48,8 @@ def admitant_2d_matrix_element_bm(mesh, row_idx, col_idx, z0, k, coupling_sign):
         return line_integral(integral_function, corners[0], corners[1], singular)
 
 
-def hypersingular(k, r, rs, n, ns):
-    vector = r - rs
-    distance = np.sqrt(vector.dot(vector))
-    kdist = k * distance
-    return (1j * k / (4 * distance ** 2)) * (
-        distance * hankel2(1, kdist) * n.dot(ns)
-        - k * hankel2(2, kdist) * n.dot(vector) * ns.dot(vector)
-    )
-
-
 def burton_miller_rhs(mesh, p_inc, grad_p_inc, k, coupling_sign=-1):
     return p_inc + (coupling_sign * 1j / k) * (grad_p_inc * mesh.normals).sum(axis=1)
-
-
-def h_2d(n, k, r, rs):
-    """Gradient of the 2D Green's function according to the obverver point r"""
-    return -hs_2d(n, k, r, rs)
 
 
 def burton_miller_solver(mesh, p_incoming, grad_p_incoming, z0, k, coupling_sign=-1):

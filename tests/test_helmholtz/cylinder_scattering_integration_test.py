@@ -3,59 +3,18 @@
 2019-05-09 14:28:36
 @author: Paul Reiter
 """
-from itertools import count
 import numpy as np
-from scipy.special import hankel2, h2vp
 import pytest
-
-# import matplotlib.pyplot as plt
+from .cylinder_scattering import calc_coefficiencts, pressure_expansion
 from pybem import complex_relative_error, Mesh, calc_solution_at
+from .integration_tests import wrapped_kirchhoff_helmholtz_solver
 from pybem.helmholtz import (
-    kirchhoff_helmholtz_solver,
     burton_miller_solver,
     admitant_2d_integral,
     fast_burton_miller_solver,
 )
-from .test_helmholtz import wrapped_kirchhoff_helmholtz_solver
 
-
-def calc_coefficiencts(k, radius, z0, amplitude, admittance, max_order):
-    orders = np.arange(max_order + 1)
-    thetas = np.pi * orders / len(orders)
-    rhs = (
-        amplitude
-        * np.exp(1j * k * radius * np.cos(thetas))
-        * (np.cos(thetas) / z0 - admittance)
-    )
-    matrix = np.array(
-        [
-            [
-                np.cos(n * theta)
-                * (1j * h2vp(n, k * radius) / z0 + admittance * hankel2(n, k * radius))
-                for n in orders
-            ]
-            for theta in thetas
-        ]
-    )
-    return np.linalg.solve(matrix, rhs)
-
-
-def pressure_expansion(k, coefficients, radius, theta):
-    return sum(
-        coef * hankel2(n, k * radius) * np.cos(n * theta)
-        for coef, n in zip(coefficients, count())
-    )
-
-
-def radial_velocity_expansion(k, coefficients, z0, radius, theta):
-    return (
-        1j
-        * sum(
-            coef * h2vp(n, k * radius) * np.cos(n * theta)
-            for coef, n in zip(coefficients, count())
-        )
-        / z0
-    )
+# import matplotlib.pyplot as plt
 
 
 @pytest.mark.parametrize("ka", [0.5, 2])
