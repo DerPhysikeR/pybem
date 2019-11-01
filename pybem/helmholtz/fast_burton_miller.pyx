@@ -31,8 +31,6 @@ def complex_system_matrix(mesh, *args, **kwargs):
         weights,
         abscissa,
         len(weights),
-        # *args,
-        # **kwargs
     )
     return system_matrix
 
@@ -78,7 +76,14 @@ cdef void rest_of_the_matrix(
 ):
 
     cdef:
-        double nx, ny, nsx, nsy, rx, ry, p0x, p0y, p1x, p1y, length, rsx, rsy
+        double length
+        double *p0
+        double *p1
+        double *r
+        double *n
+        double *ns
+        double rs[2]
+        cdef double element_vector[2]
         double complex admittance, result
 
     for row_idx in range(shape):
@@ -86,54 +91,49 @@ cdef void rest_of_the_matrix(
             if row_idx == col_idx:
                 continue
 
-            nx, ny = mesh_normals[row_idx, 0], mesh_normals[row_idx, 1]
-            nsx, nsy = mesh_normals[col_idx, 0], mesh_normals[col_idx, 1]
-            rx, ry = mesh_centers[row_idx, 0], mesh_centers[row_idx, 1]
+            n, ns = &mesh_normals[row_idx, 0], &mesh_normals[col_idx, 0]
+            r = &mesh_centers[row_idx, 0]
             admittance = mesh_admittances[col_idx]
-
-            p0x, p0y = mesh_corners[col_idx, 0, 0], mesh_corners[col_idx, 0, 1]
-            p1x, p1y = mesh_corners[col_idx, 1, 0], mesh_corners[col_idx, 1, 1]
-            length = sqrt((p1x - p0x)*(p1x - p0x) + (p1y - p0y)*(p1y - p0y))
+            p0, p1 = &mesh_corners[col_idx, 0, 0], &mesh_corners[col_idx, 1, 0]
+            element_vector[:] = [p1[0] - p0[0], p1[1] - p0[1]]
+            length = sqrt(inner_product(element_vector, element_vector))
 
             # perform integration
             result = 0
             for i in range(n_weights):
-                rsx = (p1x + p0x) / 2 + abscissa[i] * (p1x - p0x) / 2
-                rsy = (p1y + p0y) / 2 + abscissa[i] * (p1y - p0y) / 2
+                rs[0] = (p1[0] + p0[0]) / 2 + abscissa[i] * (p1[0] - p0[0]) / 2
+                rs[1] = (p1[1] + p0[1]) / 2 + abscissa[i] * (p1[1] - p0[1]) / 2
                 result = (
-                    result
-                    + weights[i]
-                    * rest_integral_function(
-                        rx, ry, nx, ny, admittance, k, z0, coupling_sign, rsx, rsy, nsx, nsy
+                    result + weights[i] * rest_integral_function(
+                        r, n, admittance, k, z0, coupling_sign, rs, ns
                     )
                 )
             matrix[row_idx, col_idx] = .5 * length * result
 
 
+cdef double inner_product(double *vec1, double *vec2):
+    return vec1[0] * vec2[0] + vec1[1] * vec2[1]
+
+
 @cython.cdivision(True)
 cdef double complex rest_integral_function(
-    double rx,
-    double ry,
-    double nx,
-    double ny,
+    double *r,
+    double *n,
     double complex adm,
     double k,
     double z0,
     int coupling_sign,
-    double rsx,
-    double rsy,
-    double nsx,
-    double nsy,
+    double *rs,
+    double *ns,
 ):
     cdef:
-        double vectorx = rx - rsx
-        double vectory = ry - rsy
-        double distance = sqrt(vectorx**2 + vectory**2)
-
-        double ndv = nx * vectorx + ny * vectory
-        double nsdv = nsx * vectorx + nsy * vectory
-        double ndns = nx * nsx + ny * nsy
-
+        double difference[2]
+    difference[:] = [r[0] - rs[0], r[1] - rs[1]]
+    cdef:
+        double distance = sqrt(inner_product(difference, difference))
+        double ndv = inner_product(n, difference)
+        double nsdv = inner_product(ns, difference)
+        double ndns = inner_product(n, ns)
         double kdist = k * distance
         double complex h20 = cs.hankel2(0, kdist)
         double complex h21 = cs.hankel2(1, kdist)
