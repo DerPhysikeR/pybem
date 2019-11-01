@@ -78,39 +78,21 @@ cdef void rest_of_the_matrix(
 ):
 
     cdef:
-        double nx
-        double ny
-        double nsx
-        double nsy
-        double rx
-        double ry
-        double complex admittance
-        double p0x
-        double p0y
-        double p1x
-        double p1y
-        double length
-        double complex result
-        double rsx
-        double rsy
+        double nx, ny, nsx, nsy, rx, ry, p0x, p0y, p1x, p1y, length, rsx, rsy
+        double complex admittance, result
 
     for row_idx in range(shape):
         for col_idx in range(shape):
             if row_idx == col_idx:
                 continue
 
-            nx = mesh_normals[row_idx, 0]
-            ny = mesh_normals[row_idx, 1]
-            nsx = mesh_normals[col_idx, 0]
-            nsy = mesh_normals[col_idx, 1]
-            rx = mesh_centers[row_idx, 0]
-            ry = mesh_centers[row_idx, 1]
+            nx, ny = mesh_normals[row_idx, 0], mesh_normals[row_idx, 1]
+            nsx, nsy = mesh_normals[col_idx, 0], mesh_normals[col_idx, 1]
+            rx, ry = mesh_centers[row_idx, 0], mesh_centers[row_idx, 1]
             admittance = mesh_admittances[col_idx]
 
-            p0x = mesh_corners[col_idx, 0, 0]
-            p0y = mesh_corners[col_idx, 0, 1]
-            p1x = mesh_corners[col_idx, 1, 0]
-            p1y = mesh_corners[col_idx, 1, 1]
+            p0x, p0y = mesh_corners[col_idx, 0, 0], mesh_corners[col_idx, 0, 1]
+            p1x, p1y = mesh_corners[col_idx, 1, 0], mesh_corners[col_idx, 1, 1]
             length = sqrt((p1x - p0x)*(p1x - p0x) + (p1y - p0y)*(p1y - p0y))
 
             # perform integration
@@ -118,8 +100,13 @@ cdef void rest_of_the_matrix(
             for i in range(n_weights):
                 rsx = (p1x + p0x) / 2 + abscissa[i] * (p1x - p0x) / 2
                 rsy = (p1y + p0y) / 2 + abscissa[i] * (p1y - p0y) / 2
-                result = result + weights[i] * rest_integral_function(rx, ry, nx, ny, admittance, k, z0, coupling_sign, rsx, rsy, nsx, nsy)
-
+                result = (
+                    result
+                    + weights[i]
+                    * rest_integral_function(
+                        rx, ry, nx, ny, admittance, k, z0, coupling_sign, rsx, rsy, nsx, nsy
+                    )
+                )
             matrix[row_idx, col_idx] = .5 * length * result
 
 
@@ -138,27 +125,28 @@ cdef double complex rest_integral_function(
     double nsx,
     double nsy,
 ):
-    cdef double vectorx = rx - rsx
-    cdef double vectory = ry - rsy
-    cdef double distance = sqrt(vectorx**2 + vectory**2)
+    cdef:
+        double vectorx = rx - rsx
+        double vectory = ry - rsy
+        double distance = sqrt(vectorx**2 + vectory**2)
 
-    cdef double ndv = nx * vectorx + ny * vectory
-    cdef double nsdv = nsx * vectorx + nsy * vectory
-    cdef double ndns = nx * nsx + ny * nsy
+        double ndv = nx * vectorx + ny * vectory
+        double nsdv = nsx * vectorx + nsy * vectory
+        double ndns = nx * nsx + ny * nsy
 
-    cdef double kdist = k * distance
-    cdef double complex h20 = cs.hankel2(0, kdist)
-    cdef double complex h21 = cs.hankel2(1, kdist)
-    cdef double complex h22 = cs.hankel2(2, kdist)
-    cdef double complex result = (
-        + .25 * k * z0 * adm * h20
-        - coupling_sign * (
-            + 1j * k * nsdv * h21
-            + ndns * h21
-            + z0 * adm * 1j * k * ndv * h21
-            - k * ndv * nsdv * h22 / distance
-            ) / (4. * distance)
-    )
+        double kdist = k * distance
+        double complex h20 = cs.hankel2(0, kdist)
+        double complex h21 = cs.hankel2(1, kdist)
+        double complex h22 = cs.hankel2(2, kdist)
+        double complex result = (
+            + .25 * k * z0 * adm * h20
+            - coupling_sign * (
+                + 1j * k * nsdv * h21
+                + ndns * h21
+                + z0 * adm * 1j * k * ndv * h21
+                - k * ndv * nsdv * h22 / distance
+                ) / (4. * distance)
+        )
     return result
 
 
