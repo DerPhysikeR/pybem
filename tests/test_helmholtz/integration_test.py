@@ -13,6 +13,7 @@ from pybem.helmholtz import (
     burton_miller_solver,
     fast_burton_miller_solver,
     admitant_2d_integral,
+    fast_calc_solution_at,
 )
 
 
@@ -23,14 +24,14 @@ def wrapped_kirchhoff_helmholtz_solver(mesh, p_incoming, _, z0, k):
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "solver",
+    "solver, calc_solution",
     [
-        wrapped_kirchhoff_helmholtz_solver,
-        burton_miller_solver,
-        fast_burton_miller_solver,
+        # (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
+        # (burton_miller_solver, calc_solution_at),
+        (fast_burton_miller_solver, fast_calc_solution_at),
     ],
 )
-def test_calc_solution_at_point_source_reflective_plane(solver):
+def test_calc_solution_at_point_source_reflective_plane(solver, calc_solution):
     # actually solve the linear system for point source above reflective plane
     n = 80
     # create admitant mesh
@@ -46,7 +47,7 @@ def test_calc_solution_at_point_source_reflective_plane(solver):
         dtype=complex,
     )
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, z0, k)
-    solution = calc_solution_at(
+    solution = calc_solution(
         admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), z0, k
     )
     np.testing.assert_allclose(
@@ -56,14 +57,14 @@ def test_calc_solution_at_point_source_reflective_plane(solver):
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "solver",
+    "solver, calc_solution",
     [
-        wrapped_kirchhoff_helmholtz_solver,
-        burton_miller_solver,
-        fast_burton_miller_solver,
+        # (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
+        # (burton_miller_solver, calc_solution_at),
+        (fast_burton_miller_solver, fast_calc_solution_at),
     ],
 )
-def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
+def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver, calc_solution):
     # plane wave impinging normally on admittance plane
     n = 180
     # create admitant mesh
@@ -81,7 +82,7 @@ def test_calc_reflection_of_fully_absorbing_plane_for_plane_wave(solver):
         dtype=complex,
     )
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, z0, k)
-    solution = calc_solution_at(
+    solution = calc_solution(
         admitant_2d_integral, mesh, surface_pressure, np.array([[0.0, 0.5]]), z0, k
     )
     np.testing.assert_allclose(0 + 1, solution[0] + 1, rtol=1e-2)

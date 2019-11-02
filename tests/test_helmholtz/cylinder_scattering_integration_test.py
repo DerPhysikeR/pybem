@@ -12,22 +12,23 @@ from pybem.helmholtz import (
     burton_miller_solver,
     admitant_2d_integral,
     fast_burton_miller_solver,
+    fast_calc_solution_at,
 )
 
 
 @pytest.mark.parametrize("ka", [0.5, 2])
 @pytest.mark.parametrize("admittance", [0, 1 / 343])
 @pytest.mark.parametrize(
-    "solver",
+    "solver, calc_solution",
     [
-        wrapped_kirchhoff_helmholtz_solver,
-        burton_miller_solver,
-        fast_burton_miller_solver,
+        # (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
+        # (burton_miller_solver, calc_solution_at),
+        (fast_burton_miller_solver, fast_calc_solution_at),
     ],
 )
 @pytest.mark.slow
 def test_plane_wave_admittance_cylinder_scattering(
-    ka, admittance, solver, tmpdir, request
+    ka, admittance, solver, calc_solution, tmpdir, request
 ):
     # set constants
     k = ka  # for radius = 1
@@ -65,7 +66,7 @@ def test_plane_wave_admittance_cylinder_scattering(
         [[1j * k * amplitude * np.exp(1j * k * point[0]), 0] for point in mesh.centers]
     )
     surface_pressure = solver(mesh, p_incoming, grad_p_incoming, z0, k)
-    result = calc_solution_at(
+    result = calc_solution(
         admitant_2d_integral, mesh, surface_pressure, mic_points, z0, k
     )
 
