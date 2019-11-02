@@ -5,11 +5,10 @@
 """
 import numpy as np
 import cython
-from scipy.integrate import fixed_quad
-from scipy.special import hankel2, struve
 from scipy.special.cython_special cimport hankel2 as chankel2
-from libc.math cimport sqrt
-from .burton_miller import burton_miller_rhs, regularized_hypersingular_bm_part
+from scipy.special.cython_special cimport struve as cstruve
+from libc.math cimport sqrt, pi
+from .burton_miller import burton_miller_rhs
 
 
 WEIGHTS = np.array([0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891, 0.2369268850561891])
@@ -27,9 +26,7 @@ def fast_burton_miller_solver(
 def complex_system_matrix(mesh, *args, **kwargs):
     dimension = len(mesh.elements)
     system_matrix = np.empty((dimension, dimension), dtype=complex)
-    for i, diag in enumerate(system_matrix):
-        system_matrix[i, i] = main_diagonal(mesh, i, *args, **kwargs)
-    rest_of_the_matrix(
+    c_calc_system_matrix(
         system_matrix,
         system_matrix.shape[0],
         mesh.normals,
@@ -46,24 +43,15 @@ def complex_system_matrix(mesh, *args, **kwargs):
     return system_matrix
 
 
-def main_diagonal(mesh, idx, z0, k, coupling_sign):
-    corners, admittance = mesh.corners[idx], mesh.admittances[idx]
-    element_vector = corners[1] - corners[0]
-    length = np.sqrt(element_vector.dot(element_vector))
-    lk2 = length * k / 2
-    return (
-        +(z0 * admittance * np.pi * length * k / 8)
-        * (+hankel2(0, lk2) * struve(-1, lk2) + hankel2(1, lk2) * struve(0, lk2))
-        - coupling_sign * fixed_quad(regularized_hypersingular_bm_part, 0, lk2)[0] / 2
-        + coupling_sign * 2j / (np.pi * k * length)
-        + (1 - coupling_sign * z0 * admittance) / 2
-    )
+@cython.cdivision(True)
+cdef double complex  regularized_hypersingular_bm_part(double v):
+    return chankel2(1, v) / v - 2j / (pi * v ** 2)  # regularization
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-cdef void rest_of_the_matrix(
+cdef void c_calc_system_matrix(
     complex[:, :] matrix,
     int shape,
     double[:, :] mesh_normals,
@@ -79,7 +67,7 @@ cdef void rest_of_the_matrix(
 ):
 
     cdef:
-        double length
+        double length, lk2, x
         double *p0
         double *p1
         double *r
@@ -91,27 +79,45 @@ cdef void rest_of_the_matrix(
 
     for row_idx in range(shape):
         for col_idx in range(shape):
-            if row_idx == col_idx:
-                continue
 
-            n, ns = &mesh_normals[row_idx, 0], &mesh_normals[col_idx, 0]
-            r = &mesh_centers[row_idx, 0]
-            admittance = mesh_admittances[col_idx]
             p0, p1 = &mesh_corners[col_idx, 0, 0], &mesh_corners[col_idx, 1, 0]
+            admittance = mesh_admittances[col_idx]
             element_vector[:] = [p1[0] - p0[0], p1[1] - p0[1]]
             length = sqrt(inner_product(element_vector, element_vector))
 
-            # perform integration
-            result = 0
-            for i in range(n_weights):
-                rs[0] = (p1[0] + p0[0]) / 2 + abscissa[i] * (p1[0] - p0[0]) / 2
-                rs[1] = (p1[1] + p0[1]) / 2 + abscissa[i] * (p1[1] - p0[1]) / 2
-                result = (
-                    result + weights[i] * rest_integral_function(
-                        r, n, admittance, k, z0, coupling_sign, rs, ns
-                    )
+            if row_idx == col_idx:
+                lk2 = length * k / 2
+
+                # perform integration
+                result = 0
+                for i in range(n_weights):
+                    x = lk2/2 + abscissa[i] * lk2/2
+                    result = result + weights[i] * regularized_hypersingular_bm_part(x)
+
+                matrix[row_idx, col_idx] = (
+                    +(z0 * admittance * pi * length * k / 8)
+                    * (+chankel2(0, lk2) * cstruve(-1, lk2) + chankel2(1, lk2) * cstruve(0, lk2))
+                    + coupling_sign * 2j / (pi * k * length)
+                    + (1 - coupling_sign * z0 * admittance) / 2
+                    - coupling_sign * lk2 * result / 4
                 )
-            matrix[row_idx, col_idx] = .5 * length * result
+
+            else:
+
+                n, ns = &mesh_normals[row_idx, 0], &mesh_normals[col_idx, 0]
+                r = &mesh_centers[row_idx, 0]
+
+                # perform integration
+                result = 0
+                for i in range(n_weights):
+                    rs[0] = (p1[0] + p0[0]) / 2 + abscissa[i] * (p1[0] - p0[0]) / 2
+                    rs[1] = (p1[1] + p0[1]) / 2 + abscissa[i] * (p1[1] - p0[1]) / 2
+                    result = (
+                        result + weights[i] * rest_integral_function(
+                            r, n, admittance, k, z0, coupling_sign, rs, ns
+                        )
+                    )
+                matrix[row_idx, col_idx] = .5 * length * result
 
 
 cdef double inner_product(double *vec1, double *vec2):
