@@ -19,5 +19,5 @@ from .burton_miller import (
 import pyximport
 
 pyximport.install(language_level=3)
-from .fast_burton_miller import fast_burton_miller_solver
 from .fast_helmholtz import fast_calc_solution_at
+from .fast_burton_miller import fast_burton_miller_solver
