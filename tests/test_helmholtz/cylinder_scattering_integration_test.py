@@ -21,8 +21,8 @@ from pybem.helmholtz import (
 @pytest.mark.parametrize(
     "solver, calc_solution",
     [
-        # (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
-        # (burton_miller_solver, calc_solution_at),
+        (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
+        (burton_miller_solver, calc_solution_at),
         (fast_burton_miller_solver, fast_calc_solution_at),
     ],
 )

@@ -26,8 +26,8 @@ def wrapped_kirchhoff_helmholtz_solver(mesh, p_incoming, _, z0, k):
 @pytest.mark.parametrize(
     "solver, calc_solution",
     [
-        # (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
-        # (burton_miller_solver, calc_solution_at),
+        (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
+        (burton_miller_solver, calc_solution_at),
         (fast_burton_miller_solver, fast_calc_solution_at),
     ],
 )
@@ -59,8 +59,8 @@ def test_calc_solution_at_point_source_reflective_plane(solver, calc_solution):
 @pytest.mark.parametrize(
     "solver, calc_solution",
     [
-        # (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
-        # (burton_miller_solver, calc_solution_at),
+        (wrapped_kirchhoff_helmholtz_solver, calc_solution_at),
+        (burton_miller_solver, calc_solution_at),
         (fast_burton_miller_solver, fast_calc_solution_at),
     ],
 )
